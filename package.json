@@ -1,0 +1,23 @@
+{
+  "name": "hohohoot",
+  "version": "1.0.0",
+  "description": "A real-time multiplayer quiz prototype built with Node.js and Socket.io",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "quiz",
+    "realtime",
+    "socket.io",
+    "kahoot",
+    "multiplayer"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  }
+}

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hohohoot - Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .form-group {
+            margin: 20px 0;
+        }
+
+        label {
+            display: block;
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-message {
+            font-size: 1.3em;
+            color: #666;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f7f7f7;
+            border-radius: 10px;
+        }
+
+        .player-info {
+            background: #f7f7f7;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .player-nickname {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .game-pin {
+            font-size: 1.2em;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 30px 0;
+            min-height: 300px;
+        }
+
+        .answer-button {
+            border: none;
+            border-radius: 15px;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 40px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .answer-button:hover:not(:disabled) {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .answer-button:active:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .answer-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .answer-button.red {
+            background: #e74c3c;
+        }
+
+        .answer-button.blue {
+            background: #3498db;
+        }
+
+        .answer-button.yellow {
+            background: #f1c40f;
+            color: #333;
+        }
+
+        .answer-button.green {
+            background: #2ecc71;
+        }
+
+        .answer-button.selected {
+            animation: pulse 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            margin: 20px 0;
+            font-size: 1.1em;
+        }
+
+        .question-info {
+            font-size: 1.5em;
+            color: #667eea;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .result-message {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 30px 0;
+            padding: 30px;
+            border-radius: 15px;
+        }
+
+        .result-correct {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .result-incorrect {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .result-waiting {
+            background: #f1c40f;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Hohohoot Player</h1>
+
+        <!-- Join Screen -->
+        <div id="join-screen">
+            <div class="form-group">
+                <label for="pin-input">Enter Game PIN:</label>
+                <input type="text" inputmode="numeric" pattern="[0-9]{6}" id="pin-input" placeholder="123456" maxlength="6">
+            </div>
+            <div class="form-group">
+                <label for="nickname-input">Your Nickname:</label>
+                <input type="text" id="nickname-input" placeholder="Enter your name" maxlength="20">
+            </div>
+            <button id="join-btn">Join Game</button>
+            <div id="error-message" class="error-message hidden"></div>
+        </div>
+
+        <!-- Waiting Screen -->
+        <div id="waiting-screen" class="hidden">
+            <div class="player-info">
+                <div class="player-nickname" id="player-nickname"></div>
+                <div class="game-pin" id="game-pin-display"></div>
+            </div>
+            <div class="status-message">✋ Waiting for host to start the game...</div>
+        </div>
+
+        <!-- Playing Screen -->
+        <div id="playing-screen" class="hidden">
+            <div class="player-info">
+                <div class="player-nickname" id="player-nickname-game"></div>
+            </div>
+            <div class="question-info" id="question-info">Question 1 of 5</div>
+            <div class="status-message" id="answer-status">Choose your answer!</div>
+            <div class="buttons-grid">
+                <button class="answer-button red" data-answer="0" aria-label="Answer A - Red">
+                    <span style="font-size: 3em;">🔴</span>
+                </button>
+                <button class="answer-button blue" data-answer="1" aria-label="Answer B - Blue">
+                    <span style="font-size: 3em;">🔵</span>
+                </button>
+                <button class="answer-button yellow" data-answer="2" aria-label="Answer C - Yellow">
+                    <span style="font-size: 3em;">🟡</span>
+                </button>
+                <button class="answer-button green" data-answer="3" aria-label="Answer D - Green">
+                    <span style="font-size: 3em;">🟢</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="hidden">
+            <div class="player-info">
+                <div class="player-nickname" id="player-nickname-results"></div>
+            </div>
+            <div id="result-display"></div>
+            <div class="status-message">⏳ Waiting for next question...</div>
+        </div>
+
+        <!-- Final Screen -->
+        <div id="final-screen" class="hidden">
+            <h2 style="color: #667eea; margin-bottom: 30px;">🎉 Game Over!</h2>
+            <div class="status-message">Thanks for playing!</div>
+            <button onclick="location.reload()">Play Again</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let currentPin = null;
+        let currentNickname = null;
+        let hasAnswered = false;
+
+        // Screen elements
+        const joinScreen = document.getElementById('join-screen');
+        const waitingScreen = document.getElementById('waiting-screen');
+        const playingScreen = document.getElementById('playing-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const finalScreen = document.getElementById('final-screen');
+
+        // Join elements
+        const pinInput = document.getElementById('pin-input');
+        const nicknameInput = document.getElementById('nickname-input');
+        const joinBtn = document.getElementById('join-btn');
+        const errorMessage = document.getElementById('error-message');
+
+        // Waiting elements
+        const playerNicknameEl = document.getElementById('player-nickname');
+        const gamePinDisplayEl = document.getElementById('game-pin-display');
+
+        // Playing elements
+        const playerNicknameGameEl = document.getElementById('player-nickname-game');
+        const questionInfoEl = document.getElementById('question-info');
+        const answerStatusEl = document.getElementById('answer-status');
+        const answerButtons = document.querySelectorAll('.answer-button');
+
+        // Results elements
+        const playerNicknameResultsEl = document.getElementById('player-nickname-results');
+        const resultDisplayEl = document.getElementById('result-display');
+
+        // Join game
+        joinBtn.addEventListener('click', () => {
+            const pin = pinInput.value.trim();
+            const nickname = nicknameInput.value.trim();
+
+            if (!pin || !nickname) {
+                showError('Please enter both PIN and nickname');
+                return;
+            }
+
+            currentPin = pin;
+            currentNickname = nickname;
+            socket.emit('player-join', { pin, nickname });
+        });
+
+        // Allow Enter key to join
+        nicknameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                joinBtn.click();
+            }
+        });
+
+        pinInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                nicknameInput.focus();
+            }
+        });
+
+        // Join success
+        socket.on('join-success', (data) => {
+            showScreen('waiting');
+            playerNicknameEl.textContent = data.nickname;
+            gamePinDisplayEl.textContent = `Game PIN: ${data.pin}`;
+        });
+
+        // Show question
+        socket.on('show-question', (data) => {
+            showScreen('playing');
+            playerNicknameGameEl.textContent = currentNickname;
+            questionInfoEl.textContent = `Question ${data.questionNumber} of ${data.totalQuestions}`;
+            answerStatusEl.textContent = 'Choose your answer!';
+            hasAnswered = false;
+            
+            // Enable all buttons
+            answerButtons.forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('selected');
+            });
+        });
+
+        // Answer button clicks
+        answerButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (hasAnswered) return;
+
+                const answerIndex = parseInt(button.dataset.answer);
+                socket.emit('player-answer', { pin: currentPin, answerIndex });
+
+                button.classList.add('selected');
+            });
+        });
+
+        // Answer recorded
+        socket.on('answer-recorded', () => {
+            hasAnswered = true;
+            answerStatusEl.textContent = '✅ Answer submitted!';
+            
+            // Disable all buttons
+            answerButtons.forEach(btn => {
+                btn.disabled = true;
+            });
+        });
+
+        // Question results
+        socket.on('question-results', (data) => {
+            showScreen('results');
+            playerNicknameResultsEl.textContent = currentNickname;
+            
+            // Show result based on correctness (we don't track this on player side for now)
+            // Just show waiting message
+            resultDisplayEl.innerHTML = '<div class="result-message result-waiting">Check the main screen for results! 📊</div>';
+        });
+
+        // Game ended
+        socket.on('game-ended', (data) => {
+            showScreen('final');
+        });
+
+        function showScreen(screen) {
+            joinScreen.classList.add('hidden');
+            waitingScreen.classList.add('hidden');
+            playingScreen.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+            finalScreen.classList.add('hidden');
+
+            switch(screen) {
+                case 'join':
+                    joinScreen.classList.remove('hidden');
+                    break;
+                case 'waiting':
+                    waitingScreen.classList.remove('hidden');
+                    break;
+                case 'playing':
+                    playingScreen.classList.remove('hidden');
+                    break;
+                case 'results':
+                    resultsScreen.classList.remove('hidden');
+                    break;
+                case 'final':
+                    finalScreen.classList.remove('hidden');
+                    break;
+            }
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+            setTimeout(() => {
+                errorMessage.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Error handling
+        socket.on('error', (data) => {
+            showError(data.message);
+        });
+
+        socket.on('host-disconnected', () => {
+            alert('Host disconnected. Game ended.');
+            location.reload();
+        });
+    </script>
+</body>
+</html>
