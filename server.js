@@ -146,6 +146,12 @@ io.on('connection', (socket) => {
 
   // Host starts the game
   socket.on('host-start-game', ({ pin }) => {
+    // Input validation
+    if (!pin || typeof pin !== 'string' || !/^\d{6}$/.test(pin)) {
+      socket.emit('error', { message: 'Invalid PIN format' });
+      return;
+    }
+    
     const game = games[pin];
     
     if (!game || game.hostId !== socket.id) {
@@ -184,6 +190,11 @@ io.on('connection', (socket) => {
       return;
     }
     
+    // Validate game state
+    if (game.state !== GameState.QUESTION) {
+      return;
+    }
+    
     // Validate answer index
     if (typeof answerIndex !== 'number' || !Number.isInteger(answerIndex)) {
       return;
@@ -218,6 +229,12 @@ io.on('connection', (socket) => {
 
   // Host shows results
   socket.on('host-show-results', ({ pin }) => {
+    // Input validation
+    if (!pin || typeof pin !== 'string' || !/^\d{6}$/.test(pin)) {
+      socket.emit('error', { message: 'Invalid PIN format' });
+      return;
+    }
+    
     const game = games[pin];
     
     if (!game || game.hostId !== socket.id) {
@@ -263,6 +280,12 @@ io.on('connection', (socket) => {
 
   // Host advances to next question
   socket.on('host-next-question', ({ pin }) => {
+    // Input validation
+    if (!pin || typeof pin !== 'string' || !/^\d{6}$/.test(pin)) {
+      socket.emit('error', { message: 'Invalid PIN format' });
+      return;
+    }
+    
     const game = games[pin];
     
     if (!game || game.hostId !== socket.id) {
