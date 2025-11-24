@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hohohoot - Real-time Quiz App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 60px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 3em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 50px;
+            font-size: 1.2em;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .role-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 30px 50px;
+            font-size: 1.5em;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            min-width: 200px;
+        }
+
+        .role-button:hover {
+            background: #764ba2;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .role-button.host {
+            background: #e74c3c;
+        }
+
+        .role-button.host:hover {
+            background: #c0392b;
+        }
+
+        .role-button.player {
+            background: #2ecc71;
+        }
+
+        .role-button.player:hover {
+            background: #27ae60;
+        }
+
+        .description {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        .emoji {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Hohohoot</h1>
+        <div class="subtitle">Real-time Multiplayer Quiz App</div>
+        
+        <div class="button-container">
+            <div>
+                <a href="/host.html" class="role-button host">
+                    <div class="emoji">📺</div>
+                    Host
+                </a>
+                <div class="description">Create and manage a game</div>
+            </div>
+            
+            <div>
+                <a href="/player.html" class="role-button player">
+                    <div class="emoji">🎮</div>
+                    Player
+                </a>
+                <div class="description">Join a game with PIN</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

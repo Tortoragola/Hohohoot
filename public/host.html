@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hohohoot - Host</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .pin-display {
+            background: #f7f7f7;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+
+        .pin-label {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .pin-number {
+            font-size: 4em;
+            font-weight: bold;
+            color: #667eea;
+            letter-spacing: 10px;
+        }
+
+        .player-count {
+            font-size: 1.5em;
+            color: #764ba2;
+            margin: 20px 0;
+        }
+
+        .players-list {
+            background: #f7f7f7;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .player-item {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .player-name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .player-score {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .question-display {
+            background: #f7f7f7;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .question-text {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .answer-box {
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: white;
+        }
+
+        .answer-box.red { background: #e74c3c; }
+        .answer-box.blue { background: #3498db; }
+        .answer-box.yellow { background: #f1c40f; color: #333; }
+        .answer-box.green { background: #2ecc71; }
+
+        .answer-box.correct {
+            animation: pulse 0.5s ease;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.8);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .leaderboard {
+            background: #f7f7f7;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .leaderboard-title {
+            font-size: 2em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .leaderboard-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .leaderboard-rank {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            width: 60px;
+        }
+
+        .leaderboard-name {
+            flex: 1;
+            text-align: left;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .leaderboard-score {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #764ba2;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .status-message {
+            font-size: 1.2em;
+            color: #666;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Hohohoot Host</h1>
+
+        <!-- Lobby Screen -->
+        <div id="lobby-screen">
+            <div class="pin-display">
+                <div class="pin-label">Game PIN:</div>
+                <div class="pin-number" id="game-pin">------</div>
+            </div>
+            <div class="player-count" id="player-count">0 players joined</div>
+            <div class="players-list" id="players-list"></div>
+            <button id="start-game-btn" disabled>Start Game</button>
+        </div>
+
+        <!-- Question Screen -->
+        <div id="question-screen" class="hidden">
+            <div class="status-message" id="question-status">Question 1 of 5</div>
+            <div class="question-display">
+                <div class="question-text" id="question-text"></div>
+                <div class="answers-grid" id="answers-grid"></div>
+            </div>
+            <button id="show-results-btn">Show Results</button>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="hidden">
+            <div class="leaderboard">
+                <div class="leaderboard-title">🏆 Leaderboard</div>
+                <div id="leaderboard-list"></div>
+            </div>
+            <button id="next-question-btn">Next Question</button>
+        </div>
+
+        <!-- Final Results Screen -->
+        <div id="final-screen" class="hidden">
+            <h2 style="color: #667eea; margin-bottom: 30px;">🎉 Game Over!</h2>
+            <div class="leaderboard">
+                <div class="leaderboard-title">🏆 Final Standings</div>
+                <div id="final-leaderboard"></div>
+            </div>
+            <button onclick="location.reload()">New Game</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let currentPin = null;
+
+        // Screen elements
+        const lobbyScreen = document.getElementById('lobby-screen');
+        const questionScreen = document.getElementById('question-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const finalScreen = document.getElementById('final-screen');
+
+        // Lobby elements
+        const gamePinEl = document.getElementById('game-pin');
+        const playerCountEl = document.getElementById('player-count');
+        const playersListEl = document.getElementById('players-list');
+        const startGameBtn = document.getElementById('start-game-btn');
+
+        // Question elements
+        const questionStatusEl = document.getElementById('question-status');
+        const questionTextEl = document.getElementById('question-text');
+        const answersGridEl = document.getElementById('answers-grid');
+        const showResultsBtn = document.getElementById('show-results-btn');
+
+        // Results elements
+        const leaderboardListEl = document.getElementById('leaderboard-list');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+
+        // Final elements
+        const finalLeaderboardEl = document.getElementById('final-leaderboard');
+
+        // Create game on load
+        socket.emit('host-create-game');
+
+        // Game created
+        socket.on('game-created', (data) => {
+            currentPin = data.pin;
+            gamePinEl.textContent = data.pin;
+            console.log('Game created with PIN:', data.pin);
+        });
+
+        // Player joined
+        socket.on('player-joined', (data) => {
+            updatePlayersList(data.players);
+            playerCountEl.textContent = `${data.playerCount} player${data.playerCount !== 1 ? 's' : ''} joined`;
+            startGameBtn.disabled = data.playerCount === 0;
+        });
+
+        // Player left
+        socket.on('player-left', (data) => {
+            updatePlayersList(data.players);
+            playerCountEl.textContent = `${data.playerCount} player${data.playerCount !== 1 ? 's' : ''} joined`;
+            startGameBtn.disabled = data.playerCount === 0;
+        });
+
+        function updatePlayersList(players) {
+            playersListEl.innerHTML = '';
+            players.forEach(player => {
+                const playerItem = document.createElement('div');
+                playerItem.className = 'player-item';
+                playerItem.innerHTML = `
+                    <span class="player-name">${player.nickname}</span>
+                    <span class="player-score">${player.score} pts</span>
+                `;
+                playersListEl.appendChild(playerItem);
+            });
+        }
+
+        // Start game
+        startGameBtn.addEventListener('click', () => {
+            socket.emit('host-start-game', { pin: currentPin });
+        });
+
+        // Display question
+        socket.on('question-display', (data) => {
+            showScreen('question');
+            questionStatusEl.textContent = `Question ${data.questionNumber} of ${data.totalQuestions}`;
+            questionTextEl.textContent = data.question;
+            
+            answersGridEl.innerHTML = '';
+            const colors = ['red', 'blue', 'yellow', 'green'];
+            data.answers.forEach((answer, index) => {
+                const answerBox = document.createElement('div');
+                answerBox.className = `answer-box ${colors[index]}`;
+                answerBox.textContent = answer;
+                answersGridEl.appendChild(answerBox);
+            });
+        });
+
+        // Show results
+        showResultsBtn.addEventListener('click', () => {
+            socket.emit('host-show-results', { pin: currentPin });
+        });
+
+        // Display results
+        socket.on('question-results', (data) => {
+            showScreen('results');
+            
+            // Highlight correct answer in question screen
+            const answerBoxes = answersGridEl.querySelectorAll('.answer-box');
+            answerBoxes[data.correctAnswer].classList.add('correct');
+            
+            // Update leaderboard
+            updateLeaderboard(leaderboardListEl, data.leaderboard);
+        });
+
+        // Next question
+        nextQuestionBtn.addEventListener('click', () => {
+            socket.emit('host-next-question', { pin: currentPin });
+        });
+
+        // Game ended
+        socket.on('game-ended', (data) => {
+            showScreen('final');
+            updateLeaderboard(finalLeaderboardEl, data.leaderboard);
+        });
+
+        function updateLeaderboard(container, leaderboard) {
+            container.innerHTML = '';
+            leaderboard.forEach(player => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                item.innerHTML = `
+                    <div class="leaderboard-rank">${player.rank}</div>
+                    <div class="leaderboard-name">${player.nickname}</div>
+                    <div class="leaderboard-score">${player.score}</div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function showScreen(screen) {
+            lobbyScreen.classList.add('hidden');
+            questionScreen.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+            finalScreen.classList.add('hidden');
+
+            switch(screen) {
+                case 'lobby':
+                    lobbyScreen.classList.remove('hidden');
+                    break;
+                case 'question':
+                    questionScreen.classList.remove('hidden');
+                    break;
+                case 'results':
+                    resultsScreen.classList.remove('hidden');
+                    break;
+                case 'final':
+                    finalScreen.classList.remove('hidden');
+                    break;
+            }
+        }
+
+        // Error handling
+        socket.on('error', (data) => {
+            alert('Error: ' + data.message);
+        });
+
+        socket.on('host-disconnected', () => {
+            alert('Host disconnected. Game ended.');
+            location.reload();
+        });
+    </script>
+</body>
+</html>
