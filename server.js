@@ -90,6 +90,25 @@ io.on('connection', (socket) => {
 
   // Player joins a game
   socket.on('player-join', ({ pin, nickname }) => {
+    // Input validation
+    if (!pin || typeof pin !== 'string' || !/^\d{6}$/.test(pin)) {
+      socket.emit('error', { message: 'Invalid PIN format' });
+      return;
+    }
+    
+    if (!nickname || typeof nickname !== 'string' || nickname.trim().length === 0) {
+      socket.emit('error', { message: 'Nickname is required' });
+      return;
+    }
+    
+    if (nickname.length > 20) {
+      socket.emit('error', { message: 'Nickname too long (max 20 characters)' });
+      return;
+    }
+    
+    // Sanitize nickname
+    const sanitizedNickname = nickname.trim().substring(0, 20);
+    
     const game = games[pin];
     
     if (!game) {
@@ -105,12 +124,12 @@ io.on('connection', (socket) => {
     // Add player to game
     game.players[socket.id] = {
       id: socket.id,
-      nickname: nickname,
+      nickname: sanitizedNickname,
       score: 0
     };
 
     socket.join(pin);
-    socket.emit('join-success', { pin: pin, nickname: nickname });
+    socket.emit('join-success', { pin: pin, nickname: sanitizedNickname });
 
     // Notify host of new player
     io.to(game.hostId).emit('player-joined', {
@@ -118,7 +137,7 @@ io.on('connection', (socket) => {
       playerCount: Object.keys(game.players).length
     });
 
-    console.log(`Player ${nickname} joined game ${pin}`);
+    console.log(`Player ${sanitizedNickname} joined game ${pin}`);
   });
 
   // Host starts the game
@@ -158,6 +177,15 @@ io.on('connection', (socket) => {
     const game = games[pin];
     
     if (!game || !game.players[socket.id]) {
+      return;
+    }
+    
+    // Validate answer index
+    if (typeof answerIndex !== 'number' || !Number.isInteger(answerIndex)) {
+      return;
+    }
+    
+    if (answerIndex < 0 || answerIndex >= 4) {
       return;
     }
 
