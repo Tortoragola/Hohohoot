@@ -56,7 +56,11 @@ const games = {}; // Store active games by PIN
 
 // Generate random 6-digit PIN
 function generatePIN() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  let pin;
+  do {
+    pin = Math.floor(100000 + Math.random() * 900000).toString();
+  } while (games[pin]);
+  return pin;
 }
 
 // Game states
