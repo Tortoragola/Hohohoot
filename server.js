@@ -226,6 +226,10 @@ io.on('connection', (socket) => {
 
     game.state = GameState.RESULT;
 
+    if (game.currentQuestionIndex < 0 || game.currentQuestionIndex >= QUESTIONS.length) {
+      socket.emit('error', { message: 'Invalid question state' });
+      return;
+    }
     const question = QUESTIONS[game.currentQuestionIndex];
     
     // Calculate results
