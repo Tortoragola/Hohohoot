@@ -229,11 +229,14 @@ io.on('connection', (socket) => {
     const question = QUESTIONS[game.currentQuestionIndex];
     
     // Calculate results
-    const results = Object.entries(game.answers).map(([playerId, answer]) => ({
-      nickname: game.players[playerId].nickname,
-      isCorrect: answer.isCorrect,
-      score: game.players[playerId].score
-    }));
+    const results = Object.entries(game.answers).map(([playerId, answer]) => {
+      const player = game.players[playerId];
+      return player ? {
+        nickname: player.nickname,
+        isCorrect: answer.isCorrect,
+        score: player.score
+      } : null;
+    }).filter(result => result !== null);
 
     // Sort by score for leaderboard
     const leaderboard = Object.values(game.players)
