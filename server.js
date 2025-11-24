@@ -287,6 +287,11 @@ io.on('connection', (socket) => {
         leaderboard: finalLeaderboard
       });
 
+      // Schedule cleanup of the game after 1 minute
+      setTimeout(() => {
+        delete games[pin];
+        console.log(`Game ${pin} cleaned up`);
+      }, 60000); // 1 minute
       console.log(`Game ${pin} ended`);
     } else {
       // Show next question
