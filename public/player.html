@@ -292,7 +292,7 @@
     <script>
         // Ensure Socket.IO is loaded before initializing
         if (typeof io === 'undefined') {
-            alert('Failed to load Socket.IO. Please refresh the page.');
+            document.body.innerHTML = '<div style="text-align: center; margin-top: 50px; font-family: Arial;"><h1>Error</h1><p>Failed to load Socket.IO library. Please refresh the page.</p></div>';
             throw new Error('Socket.IO not loaded');
         }
         
@@ -339,7 +339,7 @@
             }
 
             // Ensure socket is connected
-            if (!socket || !socket.connected) {
+            if (!socket.connected) {
                 showError('Not connected to server. Please refresh the page.');
                 return;
             }
