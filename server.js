@@ -341,6 +341,47 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Host ends session
+  socket.on('host-end-session', ({ pin }) => {
+    // Input validation
+    if (!pin || typeof pin !== 'string' || !/^\d{6}$/.test(pin)) {
+      socket.emit('error', { message: 'Invalid PIN format' });
+      return;
+    }
+    
+    const game = games[pin];
+    
+    if (!game || game.hostId !== socket.id) {
+      socket.emit('error', { message: 'Unauthorized or game not found' });
+      return;
+    }
+
+    // Calculate final leaderboard before ending
+    const finalLeaderboard = Object.values(game.players)
+      .sort((a, b) => b.score - a.score)
+      .map((player, index) => ({
+        rank: index + 1,
+        nickname: player.nickname,
+        score: player.score
+      }));
+
+    // Set game state to ended
+    game.state = GameState.ENDED;
+
+    // Notify all participants that the game has ended
+    io.to(pin).emit('game-ended', {
+      leaderboard: finalLeaderboard
+    });
+
+    console.log(`Game ${pin} ended by host`);
+
+    // Clean up game after a short delay
+    setTimeout(() => {
+      delete games[pin];
+      console.log(`Game ${pin} cleaned up`);
+    }, 60000); // 1 minute
+  });
+
   // Handle disconnection
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);

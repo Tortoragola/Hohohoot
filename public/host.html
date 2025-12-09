@@ -228,6 +228,7 @@
             <div class="player-count" id="player-count">0 players joined</div>
             <div class="players-list" id="players-list"></div>
             <button id="start-game-btn" disabled>Start Game</button>
+            <button id="end-session-btn" style="background: #e74c3c;">End Session</button>
         </div>
 
         <!-- Question Screen -->
@@ -238,6 +239,7 @@
                 <div class="answers-grid" id="answers-grid"></div>
             </div>
             <button id="show-results-btn">Show Results</button>
+            <button id="end-session-question-btn" style="background: #e74c3c;">End Session</button>
         </div>
 
         <!-- Results Screen -->
@@ -247,6 +249,7 @@
                 <div id="leaderboard-list"></div>
             </div>
             <button id="next-question-btn">Next Question</button>
+            <button id="end-session-results-btn" style="background: #e74c3c;">End Session</button>
         </div>
 
         <!-- Final Results Screen -->
@@ -292,6 +295,11 @@
         // Results elements
         const leaderboardListEl = document.getElementById('leaderboard-list');
         const nextQuestionBtn = document.getElementById('next-question-btn');
+
+        // End session buttons
+        const endSessionBtn = document.getElementById('end-session-btn');
+        const endSessionQuestionBtn = document.getElementById('end-session-question-btn');
+        const endSessionResultsBtn = document.getElementById('end-session-results-btn');
 
         // Final elements
         const finalLeaderboardEl = document.getElementById('final-leaderboard');
@@ -375,6 +383,17 @@
         nextQuestionBtn.addEventListener('click', () => {
             socket.emit('host-next-question', { pin: currentPin });
         });
+
+        // End session handlers
+        function handleEndSession() {
+            if (confirm('Are you sure you want to end this session? All progress will be lost.')) {
+                socket.emit('host-end-session', { pin: currentPin });
+            }
+        }
+
+        endSessionBtn.addEventListener('click', handleEndSession);
+        endSessionQuestionBtn.addEventListener('click', handleEndSession);
+        endSessionResultsBtn.addEventListener('click', handleEndSession);
 
         // Game ended
         socket.on('game-ended', (data) => {
