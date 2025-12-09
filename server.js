@@ -8,6 +8,7 @@ const server = http.createServer(app);
 const io = socketIO(server);
 
 const PORT = process.env.PORT || 3000;
+const GAME_CLEANUP_DELAY = 60000; // 1 minute in milliseconds
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
@@ -313,7 +314,7 @@ io.on('connection', (socket) => {
       setTimeout(() => {
         delete games[pin];
         console.log(`Game ${pin} cleaned up`);
-      }, 60000); // 1 minute
+      }, GAME_CLEANUP_DELAY);
       console.log(`Game ${pin} ended`);
     } else {
       // Show next question
@@ -372,7 +373,7 @@ io.on('connection', (socket) => {
     setTimeout(() => {
       delete games[pin];
       console.log(`Game ${pin} cleaned up`);
-    }, 60000); // 1 minute
+    }, GAME_CLEANUP_DELAY);
   });
 
   // Handle disconnection

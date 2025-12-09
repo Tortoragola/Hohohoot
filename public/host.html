@@ -282,6 +282,11 @@
         const socket = io();
         let currentPin = null;
 
+        // Configuration
+        const MESSAGES = {
+            endSessionConfirm: 'Are you sure you want to end this session? All progress will be lost.'
+        };
+
         // Screen elements
         const lobbyScreen = document.getElementById('lobby-screen');
         const questionScreen = document.getElementById('question-screen');
@@ -394,7 +399,7 @@
 
         // End session handlers
         function handleEndSession() {
-            if (confirm('Are you sure you want to end this session? All progress will be lost.')) {
+            if (confirm(MESSAGES.endSessionConfirm)) {
                 socket.emit('host-end-session', { pin: currentPin });
             }
         }
