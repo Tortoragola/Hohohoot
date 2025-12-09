@@ -290,6 +290,12 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        // Ensure Socket.IO is loaded before initializing
+        if (typeof io === 'undefined') {
+            alert('Failed to load Socket.IO. Please refresh the page.');
+            throw new Error('Socket.IO not loaded');
+        }
+        
         const socket = io();
         let currentPin = null;
         let currentNickname = null;
@@ -329,6 +335,12 @@
 
             if (!pin || !nickname) {
                 showError('Please enter both PIN and nickname');
+                return;
+            }
+
+            // Ensure socket is connected
+            if (!socket || !socket.connected) {
+                showError('Not connected to server. Please refresh the page.');
                 return;
             }
 
@@ -443,6 +455,17 @@
                 errorMessage.classList.add('hidden');
             }, 3000);
         }
+
+        // Socket connection error handling
+        socket.on('connect_error', (error) => {
+            console.error('Connection error:', error);
+            showError('Connection error. Please check your internet connection.');
+        });
+
+        socket.on('connect_timeout', () => {
+            console.error('Connection timeout');
+            showError('Connection timeout. Please try again.');
+        });
 
         // Error handling
         socket.on('error', (data) => {

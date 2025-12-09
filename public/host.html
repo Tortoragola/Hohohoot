@@ -262,6 +262,12 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        // Ensure Socket.IO is loaded before initializing
+        if (typeof io === 'undefined') {
+            alert('Failed to load Socket.IO. Please refresh the page.');
+            throw new Error('Socket.IO not loaded');
+        }
+        
         const socket = io();
         let currentPin = null;
 
