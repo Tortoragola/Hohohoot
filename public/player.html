@@ -338,15 +338,21 @@
                 return;
             }
 
-            // Ensure socket is connected
-            if (!socket.connected) {
-                showError('Not connected to server. Please refresh the page.');
-                return;
-            }
+            // Ensure socket is connected, or wait for connection
+            const emitJoin = () => {
+                currentPin = pin;
+                currentNickname = nickname;
+                socket.emit('player-join', { pin, nickname });
+            };
 
-            currentPin = pin;
-            currentNickname = nickname;
-            socket.emit('player-join', { pin, nickname });
+            if (socket.connected) {
+                emitJoin();
+            } else {
+                // Wait for connection, then join
+                socket.once('connect', emitJoin);
+                // Optionally, show a message to the user
+                showError('Connecting to server, please wait...');
+            }
         });
 
         // Allow Enter key to join
