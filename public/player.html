@@ -462,10 +462,6 @@
             showError('Connection error. Please check your internet connection.');
         });
 
-        socket.on('connect_timeout', () => {
-            console.error('Connection timeout');
-            showError('Connection timeout. Please try again.');
-        });
 
         // Error handling
         socket.on('error', (data) => {
