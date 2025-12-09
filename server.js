@@ -71,6 +71,17 @@ const GameState = {
   ENDED: 'ENDED'
 };
 
+// Calculate leaderboard from game players
+function calculateLeaderboard(game) {
+  return Object.values(game.players)
+    .sort((a, b) => b.score - a.score)
+    .map((player, index) => ({
+      rank: index + 1,
+      nickname: player.nickname,
+      score: player.score
+    }));
+}
+
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
 
@@ -260,13 +271,7 @@ io.on('connection', (socket) => {
     }).filter(result => result !== null);
 
     // Sort by score for leaderboard
-    const leaderboard = Object.values(game.players)
-      .sort((a, b) => b.score - a.score)
-      .map((player, index) => ({
-        rank: index + 1,
-        nickname: player.nickname,
-        score: player.score
-      }));
+    const leaderboard = calculateLeaderboard(game);
 
     // Send results to everyone
     io.to(pin).emit('question-results', {
@@ -298,13 +303,7 @@ io.on('connection', (socket) => {
       // Game ended
       game.state = GameState.ENDED;
       
-      const finalLeaderboard = Object.values(game.players)
-        .sort((a, b) => b.score - a.score)
-        .map((player, index) => ({
-          rank: index + 1,
-          nickname: player.nickname,
-          score: player.score
-        }));
+      const finalLeaderboard = calculateLeaderboard(game);
 
       io.to(pin).emit('game-ended', {
         leaderboard: finalLeaderboard
@@ -357,13 +356,7 @@ io.on('connection', (socket) => {
     }
 
     // Calculate final leaderboard before ending
-    const finalLeaderboard = Object.values(game.players)
-      .sort((a, b) => b.score - a.score)
-      .map((player, index) => ({
-        rank: index + 1,
-        nickname: player.nickname,
-        score: player.score
-      }));
+    const finalLeaderboard = calculateLeaderboard(game);
 
     // Set game state to ended
     game.state = GameState.ENDED;
