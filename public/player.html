@@ -290,6 +290,12 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        // Ensure Socket.IO is loaded before initializing
+        if (typeof io === 'undefined') {
+            document.body.innerHTML = '<div style="text-align: center; margin-top: 50px; font-family: Arial;"><h1>Error</h1><p>Failed to load Socket.IO library. Please refresh the page.</p></div>';
+            throw new Error('Socket.IO not loaded');
+        }
+        
         const socket = io();
         let currentPin = null;
         let currentNickname = null;
@@ -332,9 +338,21 @@
                 return;
             }
 
-            currentPin = pin;
-            currentNickname = nickname;
-            socket.emit('player-join', { pin, nickname });
+            // Ensure socket is connected, or wait for connection
+            const emitJoin = () => {
+                currentPin = pin;
+                currentNickname = nickname;
+                socket.emit('player-join', { pin, nickname });
+            };
+
+            if (socket.connected) {
+                emitJoin();
+            } else {
+                // Wait for connection, then join
+                socket.once('connect', emitJoin);
+                // Optionally, show a message to the user
+                showError('Connecting to server, please wait...');
+            }
         });
 
         // Allow Enter key to join
@@ -443,6 +461,13 @@
                 errorMessage.classList.add('hidden');
             }, 3000);
         }
+
+        // Socket connection error handling
+        socket.on('connect_error', (error) => {
+            console.error('Connection error:', error);
+            showError('Connection error. Please check your internet connection.');
+        });
+
 
         // Error handling
         socket.on('error', (data) => {
