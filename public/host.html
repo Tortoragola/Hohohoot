@@ -372,7 +372,7 @@
                 <div class="leaderboard-title">🏆 Final Standings</div>
                 <div id="final-leaderboard"></div>
             </div>
-            <button onclick="location.reload()">New Game</button>
+            <button id="new-game-btn">New Game</button>
         </div>
     </div>
 
@@ -432,6 +432,9 @@
         const endSessionBtn = document.getElementById('end-session-btn');
         const endSessionQuestionBtn = document.getElementById('end-session-question-btn');
         const endSessionResultsBtn = document.getElementById('end-session-results-btn');
+        
+        // New game button
+        const newGameBtn = document.getElementById('new-game-btn');
 
         // Final elements
         const finalLeaderboardEl = document.getElementById('final-leaderboard');
@@ -439,7 +442,7 @@
         // Quiz selection handlers
         useExampleBtn.addEventListener('click', () => {
             // Create game with example quiz (no questions parameter)
-            socket.emit('host-create-game', {});
+            socket.emit('host-create-game');
         });
 
         createCustomBtn.addEventListener('click', () => {
@@ -459,7 +462,7 @@
             questionForm.className = 'question-form';
             questionForm.dataset.questionId = questionId;
             questionForm.innerHTML = `
-                <button class="remove-question-btn" onclick="removeQuestion('${questionId}')">✕</button>
+                <button class="remove-question-btn" data-question-id="${questionId}">✕</button>
                 <h3>Question ${questionCounter}</h3>
                 <div class="form-group">
                     <label>Question Text:</label>
@@ -489,18 +492,17 @@
             `;
             
             questionsContainer.appendChild(questionForm);
-            updateCreateQuizButton();
-        }
-
-        window.removeQuestion = function(questionId) {
-            const questionForm = document.querySelector(`[data-question-id="${questionId}"]`);
-            if (questionForm) {
+            
+            // Add event listener for remove button
+            const removeBtn = questionForm.querySelector('.remove-question-btn');
+            removeBtn.addEventListener('click', () => {
                 questionForm.remove();
                 updateCreateQuizButton();
-                // Renumber remaining questions
                 renumberQuestions();
-            }
-        };
+            });
+            
+            updateCreateQuizButton();
+        }
 
         function renumberQuestions() {
             const forms = questionsContainer.querySelectorAll('.question-form');
@@ -658,6 +660,11 @@
         endSessionBtn.addEventListener('click', handleEndSession);
         endSessionQuestionBtn.addEventListener('click', handleEndSession);
         endSessionResultsBtn.addEventListener('click', handleEndSession);
+        
+        // New game handler
+        newGameBtn.addEventListener('click', () => {
+            location.reload();
+        });
 
         // Game ended
         socket.on('game-ended', (data) => {

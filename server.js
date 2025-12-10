@@ -87,7 +87,7 @@ io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
 
   // Host creates a new game
-  socket.on('host-create-game', ({ questions }) => {
+  socket.on('host-create-game', ({ questions = null } = {}) => {
     const pin = generatePIN();
     
     // Validate questions if provided
@@ -106,7 +106,7 @@ io.on('connection', (socket) => {
       }
       
       // Validate each question
-      const isValid = questions.every((q, index) => {
+      const isValid = questions.every((q) => {
         if (!q.question || typeof q.question !== 'string' || q.question.trim().length === 0) {
           return false;
         }
