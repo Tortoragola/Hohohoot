@@ -232,7 +232,7 @@ io.on('connection', (socket) => {
     // Check if time has expired
     if (!game.questionStartTime) {
       // Question start time not set, reject answer
-      socket.emit('answer-rejected', { reason: 'Question timing error' });
+      socket.emit('answer-rejected', { reason: 'Unable to process answer due to timing initialization error' });
       return;
     }
     
