@@ -416,14 +416,14 @@ io.on('connection', (socket) => {
         question: question.question,
         answers: question.answers,
         questionNumber: game.currentQuestionIndex + 1,
-        totalQuestions: game.questions.length
+        totalQuestions: game.questions.length,
         answerTimeLimit: game.answerTimeLimit
       });
 
       // Send signal to players
       io.to(pin).emit('show-question', {
         questionNumber: game.currentQuestionIndex + 1,
-        totalQuestions: game.questions.length
+        totalQuestions: game.questions.length,
         answerTimeLimit: game.answerTimeLimit
       });
 
