@@ -368,6 +368,19 @@
             margin-bottom: 0.5rem;
         }
 
+        .answer-count {
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #a855f7;
+            margin-bottom: 1rem;
+            padding: 0.5rem 1rem;
+            background: rgba(168, 85, 247, 0.1);
+            border-radius: 20px;
+            display: inline-block;
+            width: 100%;
+        }
+
         .question-text {
             text-align: center;
             font-size: 1.75rem;
@@ -643,6 +656,7 @@
         <!-- Question Screen -->
         <div id="question-screen" class="card hidden">
             <div class="question-status" id="question-status">Question 1 of 5</div>
+            <div class="answer-count" id="answer-count">0 / 0 answered</div>
             <div class="timer-container">
                 <div class="timer-text" id="timer-text">20</div>
                 <div class="timer-bar">
@@ -727,6 +741,7 @@
 
         // Question elements
         const questionStatusEl = document.getElementById('question-status');
+        const answerCountEl = document.getElementById('answer-count');
         const questionTextEl = document.getElementById('question-text');
         const answersGridEl = document.getElementById('answers-grid');
         const showResultsBtn = document.getElementById('show-results-btn');
@@ -907,6 +922,7 @@
         socket.on('question-display', (data) => {
             questionStatusEl.textContent = `Question ${data.questionNumber} of ${data.totalQuestions}`;
             questionTextEl.textContent = data.question;
+            answerCountEl.textContent = `0 / ${data.totalPlayers || 0} answered`;
 
             hostAnswerTimeLimit = data.answerTimeLimit || 20;
             startHostTimer(hostAnswerTimeLimit);
@@ -917,6 +933,11 @@
             ).join('');
 
             showScreen('question');
+        });
+
+        // Answer count update
+        socket.on('answer-count-update', (data) => {
+            answerCountEl.textContent = `${data.answered} / ${data.total} answered`;
         });
 
         function startHostTimer(duration) {
@@ -953,9 +974,20 @@
             socket.emit('host-show-results', { pin: currentPin });
         });
 
-        // Question results
+        // Answer revealed (when timer expires or all players answered)
+        socket.on('answer-revealed', (data) => {
+            if (hostTimerInterval) clearInterval(hostTimerInterval);
+
+            const answerBoxes = answersGridEl.querySelectorAll('.answer-box');
+            answerBoxes.forEach((box, index) => {
+                if (index === data.correctAnswer) {
+                    box.classList.add('correct');
+                }
+            });
+        });
+
+        // Question results (when host clicks Show Results)
         socket.on('question-results', (data) => {
-            const colors = ['red', 'blue', 'yellow', 'green'];
             const answerBoxes = answersGridEl.querySelectorAll('.answer-box');
             answerBoxes.forEach((box, index) => {
                 if (index === data.correctAnswer) {

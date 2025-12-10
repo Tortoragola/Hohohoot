@@ -191,6 +191,17 @@
             display: block;
         }
 
+        .status-message .answer-count {
+            margin-top: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #a855f7;
+            padding: 0.5rem 1rem;
+            background: rgba(168, 85, 247, 0.1);
+            border-radius: 20px;
+            display: inline-block;
+        }
+
         /* Answer Buttons */
         .answers-grid {
             display: grid;
@@ -250,6 +261,40 @@
 
         .answer-btn.green {
             background: linear-gradient(135deg, #22c55e, #16a34a);
+        }
+
+        /* Answer button symbols */
+        .answer-btn .symbol {
+            font-size: 7rem;
+            font-weight: bold;
+            opacity: 0.7;
+        }
+
+        .answer-btn.red .symbol {
+            color: #b91c1c;
+        }
+
+        .answer-btn.blue .symbol {
+            color: #1d4ed8;
+        }
+
+        .answer-btn.yellow .symbol {
+            color: #a16207;
+        }
+
+        .answer-btn.green .symbol {
+            color: #15803d;
+        }
+
+        .answer-btn .symbol-x {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .answer-btn .symbol-x svg {
+            width: 7rem;
+            height: 7rem;
         }
 
         .answer-btn.selected {
@@ -363,6 +408,16 @@
         .result-score span {
             color: #a855f7;
             font-weight: 600;
+        }
+
+        .result-rank {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            border-radius: 1rem;
+            color: #fff;
         }
 
         /* Leaderboard */
@@ -509,10 +564,14 @@
                 </div>
             </div>
             <div class="answers-grid">
-                <button class="answer-btn red" data-answer="0">🔴</button>
-                <button class="answer-btn blue" data-answer="1">🔵</button>
-                <button class="answer-btn yellow" data-answer="2">🟡</button>
-                <button class="answer-btn green" data-answer="3">🟢</button>
+                <button class="answer-btn red" data-answer="0"><span class="symbol">■</span></button>
+                <button class="answer-btn blue" data-answer="1"><span class="symbol">▲</span></button>
+                <button class="answer-btn yellow" data-answer="2"><span class="symbol">●</span></button>
+                <button class="answer-btn green" data-answer="3"><span class="symbol symbol-x"><svg
+                            viewBox="0 0 100 100" fill="none" stroke="#15803d" stroke-width="24" stroke-linecap="round">
+                            <line x1="20" y1="20" x2="80" y2="80" />
+                            <line x1="80" y1="20" x2="20" y2="80" />
+                        </svg></span></button>
             </div>
         </div>
 
@@ -521,7 +580,7 @@
             <div class="status-message">
                 <span class="emoji">✅</span>
                 Answer submitted!<br>
-                Waiting for results...
+                <div class="answer-count" id="player-answer-count">Waiting for others...</div>
             </div>
         </div>
 
@@ -531,6 +590,7 @@
                 <div class="result-emoji" id="result-emoji">✅</div>
                 <div class="result-text" id="result-text">Correct!</div>
                 <div class="result-score">Your score: <span id="result-score">0</span></div>
+                <div class="result-rank" id="result-rank"></div>
             </div>
         </div>
 
@@ -587,6 +647,7 @@
         const resultEmoji = document.getElementById('result-emoji');
         const resultText = document.getElementById('result-text');
         const resultScore = document.getElementById('result-score');
+        const resultRank = document.getElementById('result-rank');
 
         const finalLeaderboard = document.getElementById('final-leaderboard');
         const playAgainBtn = document.getElementById('play-again-btn');
@@ -695,7 +756,7 @@
 
                 socket.emit('player-answer', {
                     pin: currentPin,
-                    answer: answer
+                    answerIndex: answer
                 });
 
                 showScreen('submitted');
@@ -707,7 +768,25 @@
             // Already showing submitted screen
         });
 
-        // Question results
+        // Answer count update (only shown after player has answered)
+        socket.on('answer-count-update', (data) => {
+            const playerAnswerCountEl = document.getElementById('player-answer-count');
+            if (playerAnswerCountEl) {
+                playerAnswerCountEl.textContent = `${data.answered} / ${data.total} answered`;
+            }
+        });
+
+        // Answer revealed (when timer expires or all players answered)
+        // Player stays on submitted screen, waits for host to show results
+        socket.on('answer-revealed', (data) => {
+            // Just update the score internally, don't change screen
+            const myResult = data.playerResults ? data.playerResults[socket.id] : null;
+            if (myResult) {
+                currentScore = myResult.totalScore;
+            }
+        });
+
+        // Question results (when host shows leaderboard)
         socket.on('question-results', (data) => {
             const myResult = data.playerResults ? data.playerResults[socket.id] : null;
 
@@ -729,6 +808,17 @@
                 }
 
                 resultScore.textContent = currentScore;
+            }
+
+            // Find player's rank in leaderboard
+            if (data.leaderboard) {
+                const myRank = data.leaderboard.findIndex(p => p.nickname === currentNickname) + 1;
+                if (myRank > 0) {
+                    const totalPlayers = data.leaderboard.length;
+                    resultRank.textContent = `#${myRank} of ${totalPlayers}`;
+                } else {
+                    resultRank.textContent = '';
+                }
             }
 
             showScreen('result');

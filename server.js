@@ -83,6 +83,70 @@ function calculateLeaderboard(game) {
     }));
 }
 
+// Store question timers
+const questionTimers = {};
+
+// Function to reveal correct answer (when all players answered or timer expires)
+function autoRevealAnswer(pin) {
+  const game = games[pin];
+  if (!game || game.state !== GameState.QUESTION) {
+    return;
+  }
+
+  // Clear the timer if exists
+  if (questionTimers[pin]) {
+    clearTimeout(questionTimers[pin]);
+    delete questionTimers[pin];
+  }
+
+  // Don't change state - host still needs to click "Show Results"
+  // Just reveal the correct answer
+
+  const question = game.questions[game.currentQuestionIndex];
+
+  // Build playerResults map for players to see their own result
+  const playerResults = {};
+  for (const playerId of Object.keys(game.players)) {
+    const answer = game.answers[playerId];
+    const player = game.players[playerId];
+    if (answer) {
+      playerResults[playerId] = {
+        answered: true,
+        correct: answer.isCorrect,
+        totalScore: player.score
+      };
+    } else {
+      playerResults[playerId] = {
+        answered: false,
+        correct: false,
+        totalScore: player.score
+      };
+    }
+  }
+
+  // Send reveal event - host shows correct answer, players see their result
+  io.to(pin).emit('answer-revealed', {
+    correctAnswer: question.correctAnswer,
+    correctAnswerText: question.answers[question.correctAnswer],
+    playerResults: playerResults
+  });
+
+  console.log(`Answer revealed for question ${game.currentQuestionIndex + 1} in game ${pin}`);
+}
+
+// Function to start question timer
+function startQuestionTimer(pin, duration) {
+  // Clear existing timer
+  if (questionTimers[pin]) {
+    clearTimeout(questionTimers[pin]);
+  }
+
+  // Set new timer
+  questionTimers[pin] = setTimeout(() => {
+    autoRevealAnswer(pin);
+  }, duration * 1000);
+}
+
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
 
@@ -241,7 +305,8 @@ io.on('connection', (socket) => {
       question: question.question,
       answers: question.answers,
       questionNumber: game.currentQuestionIndex + 1,
-      totalQuestions: game.questions.length
+      totalQuestions: game.questions.length,
+      totalPlayers: Object.keys(game.players).length
     });
 
     // Send signal to players to show answer buttons
@@ -249,6 +314,9 @@ io.on('connection', (socket) => {
       questionNumber: game.currentQuestionIndex + 1,
       totalQuestions: game.questions.length
     });
+
+    // Start auto-results timer
+    startQuestionTimer(pin, timeLimit);
 
     console.log(`Game ${pin} started with ${timeLimit}s answer time`);
   });
@@ -322,7 +390,31 @@ io.on('connection', (socket) => {
       // Confirm to player
       socket.emit('answer-recorded');
 
+      // Broadcast answer count to host and all players who have answered
+      const totalPlayers = Object.keys(game.players).length;
+      const answeredCount = Object.keys(game.answers).length;
+
+      // Send to host
+      io.to(game.hostId).emit('answer-count-update', {
+        answered: answeredCount,
+        total: totalPlayers
+      });
+
+      // Send to all players who have answered
+      Object.keys(game.answers).forEach(playerId => {
+        io.to(playerId).emit('answer-count-update', {
+          answered: answeredCount,
+          total: totalPlayers
+        });
+      });
+
       console.log(`Player ${game.players[socket.id].nickname} answered question ${game.currentQuestionIndex + 1}`);
+
+      // Check if everyone has answered - auto reveal correct answer
+      if (answeredCount >= totalPlayers) {
+        console.log(`All players answered in game ${pin}, revealing answer`);
+        autoRevealAnswer(pin);
+      }
     }
   });
 
@@ -338,6 +430,12 @@ io.on('connection', (socket) => {
 
     if (!game || game.hostId !== socket.id) {
       return;
+    }
+
+    // Clear the auto-results timer since host manually triggered
+    if (questionTimers[pin]) {
+      clearTimeout(questionTimers[pin]);
+      delete questionTimers[pin];
     }
 
     game.state = GameState.RESULT;
@@ -361,11 +459,32 @@ io.on('connection', (socket) => {
     // Sort by score for leaderboard
     const leaderboard = calculateLeaderboard(game);
 
+    // Build playerResults map
+    const playerResults = {};
+    for (const playerId of Object.keys(game.players)) {
+      const answer = game.answers[playerId];
+      const player = game.players[playerId];
+      if (answer) {
+        playerResults[playerId] = {
+          answered: true,
+          correct: answer.isCorrect,
+          totalScore: player.score
+        };
+      } else {
+        playerResults[playerId] = {
+          answered: false,
+          correct: false,
+          totalScore: player.score
+        };
+      }
+    }
+
     // Send results to everyone
     io.to(pin).emit('question-results', {
       correctAnswer: question.correctAnswer,
       correctAnswerText: question.answers[question.correctAnswer],
-      leaderboard: leaderboard
+      leaderboard: leaderboard,
+      playerResults: playerResults
     });
 
     console.log(`Results shown for question ${game.currentQuestionIndex + 1} in game ${pin}`);
@@ -390,6 +509,12 @@ io.on('connection', (socket) => {
     if (game.currentQuestionIndex >= game.questions.length) {
       // Game ended
       game.state = GameState.ENDED;
+
+      // Clear timer
+      if (questionTimers[pin]) {
+        clearTimeout(questionTimers[pin]);
+        delete questionTimers[pin];
+      }
 
       const finalLeaderboard = calculateLeaderboard(game);
 
@@ -417,7 +542,8 @@ io.on('connection', (socket) => {
         answers: question.answers,
         questionNumber: game.currentQuestionIndex + 1,
         totalQuestions: game.questions.length,
-        answerTimeLimit: game.answerTimeLimit
+        answerTimeLimit: game.answerTimeLimit,
+        totalPlayers: Object.keys(game.players).length
       });
 
       // Send signal to players
@@ -426,6 +552,9 @@ io.on('connection', (socket) => {
         totalQuestions: game.questions.length,
         answerTimeLimit: game.answerTimeLimit
       });
+
+      // Start auto-results timer for next question
+      startQuestionTimer(pin, game.answerTimeLimit);
 
       console.log(`Next question shown in game ${pin}`);
     }
@@ -444,6 +573,12 @@ io.on('connection', (socket) => {
     if (!game || game.hostId !== socket.id) {
       socket.emit('error', { message: 'Unauthorized or game not found' });
       return;
+    }
+
+    // Clear timer
+    if (questionTimers[pin]) {
+      clearTimeout(questionTimers[pin]);
+      delete questionTimers[pin];
     }
 
     // Calculate final leaderboard before ending
