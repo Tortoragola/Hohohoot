@@ -445,18 +445,15 @@
         }
 
         const socket = io();
+
         // Handle Socket.IO connection errors
         socket.on('connect_error', function (err) {
             document.body.innerHTML = '<div style="text-align: center; margin-top: 50px; font-family: Arial;"><h1>Connection Error</h1><p>Failed to connect to the server. Please check your internet connection and try again.</p></div>';
         });
+
         let currentPin = null;
         let customQuestions = [];
         let questionCounter = 0;
-        // Handle connection errors
-        socket.on('connect_error', function (err) {
-            document.body.innerHTML = '<div style="text-align: center; margin-top: 50px; font-family: Arial;"><h1>Connection Error</h1><p>Unable to connect to the server. Please check your network and try again.</p></div>';
-        });
-        let currentPin = null;
         let hostTimerInterval = null;
         let hostAnswerTimeLimit = 20;
 
