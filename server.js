@@ -8,6 +8,7 @@ const server = http.createServer(app);
 const io = socketIO(server);
 
 const PORT = process.env.PORT || 3000;
+const GAME_CLEANUP_DELAY = 60000; // 1 minute in milliseconds
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
@@ -70,6 +71,17 @@ const GameState = {
   RESULT: 'RESULT',
   ENDED: 'ENDED'
 };
+
+// Calculate leaderboard from game players
+function calculateLeaderboard(game) {
+  return Object.values(game.players)
+    .sort((a, b) => b.score - a.score)
+    .map((player, index) => ({
+      rank: index + 1,
+      nickname: player.nickname,
+      score: player.score
+    }));
+}
 
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
@@ -260,13 +272,7 @@ io.on('connection', (socket) => {
     }).filter(result => result !== null);
 
     // Sort by score for leaderboard
-    const leaderboard = Object.values(game.players)
-      .sort((a, b) => b.score - a.score)
-      .map((player, index) => ({
-        rank: index + 1,
-        nickname: player.nickname,
-        score: player.score
-      }));
+    const leaderboard = calculateLeaderboard(game);
 
     // Send results to everyone
     io.to(pin).emit('question-results', {
@@ -298,13 +304,7 @@ io.on('connection', (socket) => {
       // Game ended
       game.state = GameState.ENDED;
       
-      const finalLeaderboard = Object.values(game.players)
-        .sort((a, b) => b.score - a.score)
-        .map((player, index) => ({
-          rank: index + 1,
-          nickname: player.nickname,
-          score: player.score
-        }));
+      const finalLeaderboard = calculateLeaderboard(game);
 
       io.to(pin).emit('game-ended', {
         leaderboard: finalLeaderboard
@@ -314,7 +314,7 @@ io.on('connection', (socket) => {
       setTimeout(() => {
         delete games[pin];
         console.log(`Game ${pin} cleaned up`);
-      }, 60000); // 1 minute
+      }, GAME_CLEANUP_DELAY);
       console.log(`Game ${pin} ended`);
     } else {
       // Show next question
@@ -339,6 +339,41 @@ io.on('connection', (socket) => {
 
       console.log(`Next question shown in game ${pin}`);
     }
+  });
+
+  // Host ends session
+  socket.on('host-end-session', ({ pin }) => {
+    // Input validation
+    if (!pin || typeof pin !== 'string' || !/^\d{6}$/.test(pin)) {
+      socket.emit('error', { message: 'Invalid PIN format' });
+      return;
+    }
+    
+    const game = games[pin];
+    
+    if (!game || game.hostId !== socket.id) {
+      socket.emit('error', { message: 'Unauthorized or game not found' });
+      return;
+    }
+
+    // Calculate final leaderboard before ending
+    const finalLeaderboard = calculateLeaderboard(game);
+
+    // Set game state to ended
+    game.state = GameState.ENDED;
+
+    // Notify all participants that the game has ended
+    io.to(pin).emit('game-ended', {
+      leaderboard: finalLeaderboard
+    });
+
+    console.log(`Game ${pin} ended by host`);
+
+    // Clean up game after a short delay
+    setTimeout(() => {
+      delete games[pin];
+      console.log(`Game ${pin} cleaned up`);
+    }, GAME_CLEANUP_DELAY);
   });
 
   // Handle disconnection

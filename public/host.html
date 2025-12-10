@@ -116,6 +116,14 @@
             transform: none;
         }
 
+        button.danger {
+            background: #e74c3c;
+        }
+
+        button.danger:hover {
+            background: #c0392b;
+        }
+
         .question-display {
             background: #f7f7f7;
             padding: 30px;
@@ -228,6 +236,7 @@
             <div class="player-count" id="player-count">0 players joined</div>
             <div class="players-list" id="players-list"></div>
             <button id="start-game-btn" disabled>Start Game</button>
+            <button id="end-session-btn" class="danger">End Session</button>
         </div>
 
         <!-- Question Screen -->
@@ -238,6 +247,7 @@
                 <div class="answers-grid" id="answers-grid"></div>
             </div>
             <button id="show-results-btn">Show Results</button>
+            <button id="end-session-question-btn" class="danger">End Session</button>
         </div>
 
         <!-- Results Screen -->
@@ -247,6 +257,7 @@
                 <div id="leaderboard-list"></div>
             </div>
             <button id="next-question-btn">Next Question</button>
+            <button id="end-session-results-btn" class="danger">End Session</button>
         </div>
 
         <!-- Final Results Screen -->
@@ -262,8 +273,23 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        // Ensure Socket.IO is loaded before initializing
+        if (typeof io === 'undefined') {
+            document.body.innerHTML = '<div style="text-align: center; margin-top: 50px; font-family: Arial;"><h1>Error</h1><p>Failed to load Socket.IO library. Please refresh the page.</p></div>';
+            throw new Error('Socket.IO not loaded');
+        }
+        
         const socket = io();
+        // Handle connection errors
+        socket.on('connect_error', function (err) {
+            document.body.innerHTML = '<div style="text-align: center; margin-top: 50px; font-family: Arial;"><h1>Connection Error</h1><p>Unable to connect to the server. Please check your network and try again.</p></div>';
+        });
         let currentPin = null;
+
+        // Configuration
+        const MESSAGES = {
+            endSessionConfirm: 'Are you sure you want to end this session? All progress will be lost.'
+        };
 
         // Screen elements
         const lobbyScreen = document.getElementById('lobby-screen');
@@ -286,6 +312,11 @@
         // Results elements
         const leaderboardListEl = document.getElementById('leaderboard-list');
         const nextQuestionBtn = document.getElementById('next-question-btn');
+
+        // End session buttons
+        const endSessionBtn = document.getElementById('end-session-btn');
+        const endSessionQuestionBtn = document.getElementById('end-session-question-btn');
+        const endSessionResultsBtn = document.getElementById('end-session-results-btn');
 
         // Final elements
         const finalLeaderboardEl = document.getElementById('final-leaderboard');
@@ -369,6 +400,17 @@
         nextQuestionBtn.addEventListener('click', () => {
             socket.emit('host-next-question', { pin: currentPin });
         });
+
+        // End session handlers
+        function handleEndSession() {
+            if (confirm(MESSAGES.endSessionConfirm)) {
+                socket.emit('host-end-session', { pin: currentPin });
+            }
+        }
+
+        endSessionBtn.addEventListener('click', handleEndSession);
+        endSessionQuestionBtn.addEventListener('click', handleEndSession);
+        endSessionResultsBtn.addEventListener('click', handleEndSession);
 
         // Game ended
         socket.on('game-ended', (data) => {
