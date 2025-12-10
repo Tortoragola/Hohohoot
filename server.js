@@ -87,8 +87,55 @@ io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
 
   // Host creates a new game
-  socket.on('host-create-game', () => {
+  socket.on('host-create-game', ({ questions = null } = {}) => {
     const pin = generatePIN();
+    
+    // Validate questions if provided
+    let gameQuestions = QUESTIONS; // Default to hardcoded questions
+    
+    if (questions && Array.isArray(questions)) {
+      // Validate custom questions
+      if (questions.length === 0) {
+        socket.emit('error', { message: 'At least one question is required' });
+        return;
+      }
+      
+      if (questions.length > 50) {
+        socket.emit('error', { message: 'Maximum 50 questions allowed' });
+        return;
+      }
+      
+      // Validate each question
+      const isValid = questions.every((q) => {
+        if (!q.question || typeof q.question !== 'string' || q.question.trim().length === 0) {
+          return false;
+        }
+        if (!Array.isArray(q.answers) || q.answers.length !== 4) {
+          return false;
+        }
+        if (!q.answers.every(a => typeof a === 'string' && a.trim().length > 0)) {
+          return false;
+        }
+        if (typeof q.correctAnswer !== 'number' || q.correctAnswer < 0 || q.correctAnswer > 3) {
+          return false;
+        }
+        return true;
+      });
+      
+      if (!isValid) {
+        socket.emit('error', { message: 'Invalid question format' });
+        return;
+      }
+      
+      // Use custom questions with proper structure
+      gameQuestions = questions.map((q, index) => ({
+        id: index + 1,
+        question: q.question.trim(),
+        answers: q.answers.map(a => a.trim()),
+        correctAnswer: q.correctAnswer,
+        colors: ["red", "blue", "yellow", "green"]
+      }));
+    }
     
     games[pin] = {
       pin: pin,
@@ -97,13 +144,14 @@ io.on('connection', (socket) => {
       players: {},
       currentQuestionIndex: -1,
       answers: {}, // Track player answers for current question
+      questions: gameQuestions // Store questions for this game
       answerTimeLimit: 20, // Default 20 seconds
       questionStartTime: null // Track when question was shown
     };
 
     socket.join(pin);
     socket.emit('game-created', { pin: pin });
-    console.log(`Game created with PIN: ${pin}`);
+    console.log(`Game created with PIN: ${pin} (${gameQuestions.length} questions)`);
   });
 
   // Player joins a game
@@ -186,22 +234,20 @@ io.on('connection', (socket) => {
     game.answerTimeLimit = timeLimit;
     game.questionStartTime = Date.now();
 
-    const question = QUESTIONS[game.currentQuestionIndex];
+    const question = game.questions[game.currentQuestionIndex];
     
     // Send question to host
     io.to(game.hostId).emit('question-display', {
       question: question.question,
       answers: question.answers,
       questionNumber: game.currentQuestionIndex + 1,
-      totalQuestions: QUESTIONS.length,
-      answerTimeLimit: timeLimit
+      totalQuestions: game.questions.length
     });
 
     // Send signal to players to show answer buttons
     io.to(pin).emit('show-question', {
       questionNumber: game.currentQuestionIndex + 1,
-      totalQuestions: QUESTIONS.length,
-      answerTimeLimit: timeLimit
+      totalQuestions: game.questions.length
     });
 
     console.log(`Game ${pin} started with ${timeLimit}s answer time`);
@@ -247,7 +293,7 @@ io.on('connection', (socket) => {
 
     // Record answer if not already answered
     if (!game.answers[socket.id]) {
-      const question = QUESTIONS[game.currentQuestionIndex];
+      const question = game.questions[game.currentQuestionIndex];
       const isCorrect = answerIndex === question.correctAnswer;
       
       game.answers[socket.id] = {
@@ -296,11 +342,11 @@ io.on('connection', (socket) => {
 
     game.state = GameState.RESULT;
 
-    if (game.currentQuestionIndex < 0 || game.currentQuestionIndex >= QUESTIONS.length) {
+    if (game.currentQuestionIndex < 0 || game.currentQuestionIndex >= game.questions.length) {
       socket.emit('error', { message: 'Invalid question state' });
       return;
     }
-    const question = QUESTIONS[game.currentQuestionIndex];
+    const question = game.questions[game.currentQuestionIndex];
     
     // Calculate results
     const results = Object.entries(game.answers).map(([playerId, answer]) => {
@@ -341,7 +387,7 @@ io.on('connection', (socket) => {
 
     game.currentQuestionIndex++;
     
-    if (game.currentQuestionIndex >= QUESTIONS.length) {
+    if (game.currentQuestionIndex >= game.questions.length) {
       // Game ended
       game.state = GameState.ENDED;
       
@@ -363,21 +409,21 @@ io.on('connection', (socket) => {
       game.answers = {};
       game.questionStartTime = Date.now();
 
-      const question = QUESTIONS[game.currentQuestionIndex];
+      const question = game.questions[game.currentQuestionIndex];
       
       // Send question to host
       io.to(game.hostId).emit('question-display', {
         question: question.question,
         answers: question.answers,
         questionNumber: game.currentQuestionIndex + 1,
-        totalQuestions: QUESTIONS.length,
+        totalQuestions: game.questions.length
         answerTimeLimit: game.answerTimeLimit
       });
 
       // Send signal to players
       io.to(pin).emit('show-question', {
         questionNumber: game.currentQuestionIndex + 1,
-        totalQuestions: QUESTIONS.length,
+        totalQuestions: game.questions.length
         answerTimeLimit: game.answerTimeLimit
       });
 

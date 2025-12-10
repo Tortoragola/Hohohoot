@@ -222,6 +222,87 @@
             margin: 20px 0;
         }
 
+        .question-form {
+            background: #f7f7f7;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .question-form h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .answer-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .answer-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .answer-input-wrapper input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .answer-input-wrapper input[type="text"] {
+            flex: 1;
+        }
+
+        .remove-question-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .remove-question-btn:hover {
+            background: #c0392b;
         .timer-bar-container {
             width: 100%;
             height: 30px;
@@ -250,8 +331,30 @@
     <div class="container">
         <h1>🎯 Hohohoot Host</h1>
 
+        <!-- Quiz Selection Screen -->
+        <div id="quiz-selection-screen">
+            <h2 style="color: #667eea; margin-bottom: 30px;">Choose Your Quiz</h2>
+            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                <button id="use-example-btn" style="background: #2ecc71;">📚 Use Example Quiz</button>
+                <button id="create-custom-btn" style="background: #e74c3c;">✏️ Create Custom Quiz</button>
+            </div>
+        </div>
+
+        <!-- Custom Quiz Creation Screen -->
+        <div id="quiz-creation-screen" class="hidden">
+            <h2 style="color: #667eea; margin-bottom: 20px;">Create Your Quiz</h2>
+            <div id="questions-container" style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
+                <!-- Questions will be added here -->
+            </div>
+            <button id="add-question-btn" style="background: #2ecc71; margin: 10px;">➕ Add Question</button>
+            <div style="margin-top: 20px;">
+                <button id="create-quiz-btn" disabled>Create Quiz & Start Game</button>
+                <button id="cancel-quiz-btn" class="danger">Cancel</button>
+            </div>
+        </div>
+
         <!-- Lobby Screen -->
-        <div id="lobby-screen">
+        <div id="lobby-screen" class="hidden">
             <div class="pin-display">
                 <div class="pin-label">Game PIN:</div>
                 <div class="pin-number" id="game-pin">------</div>
@@ -305,7 +408,7 @@
                 <div class="leaderboard-title">🏆 Final Standings</div>
                 <div id="final-leaderboard"></div>
             </div>
-            <button onclick="location.reload()">New Game</button>
+            <button id="new-game-btn">New Game</button>
         </div>
     </div>
 
@@ -318,6 +421,13 @@
         }
         
         const socket = io();
+        // Handle Socket.IO connection errors
+        socket.on('connect_error', function (err) {
+            document.body.innerHTML = '<div style="text-align: center; margin-top: 50px; font-family: Arial;"><h1>Connection Error</h1><p>Failed to connect to the server. Please check your internet connection and try again.</p></div>';
+        });
+        let currentPin = null;
+        let customQuestions = [];
+        let questionCounter = 0;
         // Handle connection errors
         socket.on('connect_error', function (err) {
             document.body.innerHTML = '<div style="text-align: center; margin-top: 50px; font-family: Arial;"><h1>Connection Error</h1><p>Unable to connect to the server. Please check your network and try again.</p></div>';
@@ -332,10 +442,22 @@
         };
 
         // Screen elements
+        const quizSelectionScreen = document.getElementById('quiz-selection-screen');
+        const quizCreationScreen = document.getElementById('quiz-creation-screen');
         const lobbyScreen = document.getElementById('lobby-screen');
         const questionScreen = document.getElementById('question-screen');
         const resultsScreen = document.getElementById('results-screen');
         const finalScreen = document.getElementById('final-screen');
+
+        // Quiz selection elements
+        const useExampleBtn = document.getElementById('use-example-btn');
+        const createCustomBtn = document.getElementById('create-custom-btn');
+
+        // Quiz creation elements
+        const questionsContainer = document.getElementById('questions-container');
+        const addQuestionBtn = document.getElementById('add-question-btn');
+        const createQuizBtn = document.getElementById('create-quiz-btn');
+        const cancelQuizBtn = document.getElementById('cancel-quiz-btn');
 
         // Lobby elements
         const gamePinEl = document.getElementById('game-pin');
@@ -359,17 +481,151 @@
         const endSessionBtn = document.getElementById('end-session-btn');
         const endSessionQuestionBtn = document.getElementById('end-session-question-btn');
         const endSessionResultsBtn = document.getElementById('end-session-results-btn');
+        
+        // New game button
+        const newGameBtn = document.getElementById('new-game-btn');
 
         // Final elements
         const finalLeaderboardEl = document.getElementById('final-leaderboard');
 
-        // Create game on load
-        socket.emit('host-create-game');
+        // Quiz selection handlers
+        useExampleBtn.addEventListener('click', () => {
+            // Create game with example quiz (no questions parameter)
+            socket.emit('host-create-game');
+        });
+
+        createCustomBtn.addEventListener('click', () => {
+            showScreen('quiz-creation');
+            // Add first question automatically
+            if (customQuestions.length === 0) {
+                addQuestion();
+            }
+        });
+
+        // Quiz creation handlers
+        function addQuestion() {
+            questionCounter++;
+            const questionId = `q${questionCounter}`;
+            
+            const questionForm = document.createElement('div');
+            questionForm.className = 'question-form';
+            questionForm.dataset.questionId = questionId;
+            questionForm.innerHTML = `
+                <button class="remove-question-btn" data-question-id="${questionId}">✕</button>
+                <h3>Question ${questionCounter}</h3>
+                <div class="form-group">
+                    <label>Question Text:</label>
+                    <textarea placeholder="Enter your question here..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Answers (select the correct one):</label>
+                    <div class="answer-inputs">
+                        <div class="answer-input-wrapper">
+                            <input type="radio" name="${questionId}-correct" value="0" required>
+                            <input type="text" placeholder="Answer 1 (Red)" required style="border-left: 4px solid #e74c3c;">
+                        </div>
+                        <div class="answer-input-wrapper">
+                            <input type="radio" name="${questionId}-correct" value="1">
+                            <input type="text" placeholder="Answer 2 (Blue)" required style="border-left: 4px solid #3498db;">
+                        </div>
+                        <div class="answer-input-wrapper">
+                            <input type="radio" name="${questionId}-correct" value="2">
+                            <input type="text" placeholder="Answer 3 (Yellow)" required style="border-left: 4px solid #f1c40f;">
+                        </div>
+                        <div class="answer-input-wrapper">
+                            <input type="radio" name="${questionId}-correct" value="3">
+                            <input type="text" placeholder="Answer 4 (Green)" required style="border-left: 4px solid #2ecc71;">
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            questionsContainer.appendChild(questionForm);
+            
+            // Add event listener for remove button
+            const removeBtn = questionForm.querySelector('.remove-question-btn');
+            removeBtn.addEventListener('click', () => {
+                questionForm.remove();
+                updateCreateQuizButton();
+                renumberQuestions();
+            });
+            
+            updateCreateQuizButton();
+        }
+
+        function renumberQuestions() {
+            const forms = questionsContainer.querySelectorAll('.question-form');
+            forms.forEach((form, index) => {
+                form.querySelector('h3').textContent = `Question ${index + 1}`;
+            });
+        }
+
+        function updateCreateQuizButton() {
+            const questionForms = questionsContainer.querySelectorAll('.question-form');
+            createQuizBtn.disabled = questionForms.length === 0;
+        }
+
+        addQuestionBtn.addEventListener('click', addQuestion);
+
+        cancelQuizBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to cancel? All questions will be lost.')) {
+                questionsContainer.innerHTML = '';
+                customQuestions = [];
+                questionCounter = 0;
+                showScreen('quiz-selection');
+            }
+        });
+
+        createQuizBtn.addEventListener('click', () => {
+            const questions = [];
+            const questionForms = questionsContainer.querySelectorAll('.question-form');
+            
+            let isValid = true;
+            questionForms.forEach((form, index) => {
+                const questionText = form.querySelector('textarea').value.trim();
+                const answerInputs = form.querySelectorAll('.answer-input-wrapper input[type="text"]');
+                const correctRadio = form.querySelector('input[type="radio"]:checked');
+                
+                if (!questionText) {
+                    alert(`Question ${index + 1}: Please enter question text`);
+                    isValid = false;
+                    return;
+                }
+                
+                const answers = Array.from(answerInputs).map(input => input.value.trim());
+                if (answers.some(a => !a)) {
+                    alert(`Question ${index + 1}: Please fill in all answers`);
+                    isValid = false;
+                    return;
+                }
+                
+                if (!correctRadio) {
+                    alert(`Question ${index + 1}: Please select the correct answer`);
+                    isValid = false;
+                    return;
+                }
+                
+                questions.push({
+                    question: questionText,
+                    answers: answers,
+                    correctAnswer: parseInt(correctRadio.value)
+                });
+            });
+            
+            if (isValid && questions.length > 0) {
+                // Create game with custom questions
+                socket.emit('host-create-game', { questions: questions });
+            }
+        });
+
+        // Create game on load - REMOVED, now we show quiz selection instead
+        // socket.emit('host-create-game');
 
         // Game created
         socket.on('game-created', (data) => {
             currentPin = data.pin;
             gamePinEl.textContent = data.pin;
+            showScreen('lobby');
             console.log('Game created with PIN:', data.pin);
         });
 
@@ -495,6 +751,11 @@
         endSessionBtn.addEventListener('click', handleEndSession);
         endSessionQuestionBtn.addEventListener('click', handleEndSession);
         endSessionResultsBtn.addEventListener('click', handleEndSession);
+        
+        // New game handler
+        newGameBtn.addEventListener('click', () => {
+            location.reload();
+        });
 
         // Game ended
         socket.on('game-ended', (data) => {
@@ -517,12 +778,20 @@
         }
 
         function showScreen(screen) {
+            quizSelectionScreen.classList.add('hidden');
+            quizCreationScreen.classList.add('hidden');
             lobbyScreen.classList.add('hidden');
             questionScreen.classList.add('hidden');
             resultsScreen.classList.add('hidden');
             finalScreen.classList.add('hidden');
 
             switch(screen) {
+                case 'quiz-selection':
+                    quizSelectionScreen.classList.remove('hidden');
+                    break;
+                case 'quiz-creation':
+                    quizCreationScreen.classList.remove('hidden');
+                    break;
                 case 'lobby':
                     lobbyScreen.classList.remove('hidden');
                     break;
