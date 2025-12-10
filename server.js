@@ -89,22 +89,22 @@ io.on('connection', (socket) => {
   // Host creates a new game
   socket.on('host-create-game', ({ questions = null } = {}) => {
     const pin = generatePIN();
-    
+
     // Validate questions if provided
     let gameQuestions = QUESTIONS; // Default to hardcoded questions
-    
+
     if (questions && Array.isArray(questions)) {
       // Validate custom questions
       if (questions.length === 0) {
         socket.emit('error', { message: 'At least one question is required' });
         return;
       }
-      
+
       if (questions.length > 50) {
         socket.emit('error', { message: 'Maximum 50 questions allowed' });
         return;
       }
-      
+
       // Validate each question
       const isValid = questions.every((q) => {
         if (!q.question || typeof q.question !== 'string' || q.question.trim().length === 0) {
@@ -121,12 +121,12 @@ io.on('connection', (socket) => {
         }
         return true;
       });
-      
+
       if (!isValid) {
         socket.emit('error', { message: 'Invalid question format' });
         return;
       }
-      
+
       // Use custom questions with proper structure
       gameQuestions = questions.map((q, index) => ({
         id: index + 1,
@@ -136,7 +136,7 @@ io.on('connection', (socket) => {
         colors: ["red", "blue", "yellow", "green"]
       }));
     }
-    
+
     games[pin] = {
       pin: pin,
       hostId: socket.id,
@@ -144,7 +144,7 @@ io.on('connection', (socket) => {
       players: {},
       currentQuestionIndex: -1,
       answers: {}, // Track player answers for current question
-      questions: gameQuestions // Store questions for this game
+      questions: gameQuestions, // Store questions for this game
       answerTimeLimit: 20, // Default 20 seconds
       questionStartTime: null // Track when question was shown
     };
@@ -161,22 +161,22 @@ io.on('connection', (socket) => {
       socket.emit('error', { message: 'Invalid PIN format' });
       return;
     }
-    
+
     if (!nickname || typeof nickname !== 'string' || nickname.trim().length === 0) {
       socket.emit('error', { message: 'Nickname is required' });
       return;
     }
-    
+
     if (nickname.length > 20) {
       socket.emit('error', { message: 'Nickname too long (max 20 characters)' });
       return;
     }
-    
+
     // Sanitize nickname
     const sanitizedNickname = nickname.trim().substring(0, 20);
-    
+
     const game = games[pin];
-    
+
     if (!game) {
       socket.emit('error', { message: 'Game not found' });
       return;
@@ -213,16 +213,16 @@ io.on('connection', (socket) => {
       socket.emit('error', { message: 'Invalid PIN format' });
       return;
     }
-    
+
     // Validate answerTimeLimit
     const timeLimit = parseInt(answerTimeLimit);
     if (isNaN(timeLimit) || timeLimit < 5 || timeLimit > 120) {
       socket.emit('error', { message: 'Answer time must be between 5 and 120 seconds' });
       return;
     }
-    
+
     const game = games[pin];
-    
+
     if (!game || game.hostId !== socket.id) {
       socket.emit('error', { message: 'Unauthorized or game not found' });
       return;
@@ -235,7 +235,7 @@ io.on('connection', (socket) => {
     game.questionStartTime = Date.now();
 
     const question = game.questions[game.currentQuestionIndex];
-    
+
     // Send question to host
     io.to(game.hostId).emit('question-display', {
       question: question.question,
@@ -256,21 +256,21 @@ io.on('connection', (socket) => {
   // Player submits answer
   socket.on('player-answer', ({ pin, answerIndex }) => {
     const game = games[pin];
-    
+
     if (!game || !game.players[socket.id]) {
       return;
     }
-    
+
     // Validate game state
     if (game.state !== GameState.QUESTION) {
       return;
     }
-    
+
     // Validate answer index
     if (typeof answerIndex !== 'number' || !Number.isInteger(answerIndex)) {
       return;
     }
-    
+
     if (answerIndex < 0 || answerIndex >= 4) {
       return;
     }
@@ -281,10 +281,10 @@ io.on('connection', (socket) => {
       socket.emit('answer-rejected', { reason: 'Unable to process answer due to timing initialization error' });
       return;
     }
-    
+
     const currentTime = Date.now();
     const timeElapsed = (currentTime - game.questionStartTime) / 1000; // in seconds
-    
+
     if (timeElapsed > game.answerTimeLimit) {
       // Time's up - don't accept the answer
       socket.emit('answer-rejected', { reason: 'Time expired' });
@@ -295,7 +295,7 @@ io.on('connection', (socket) => {
     if (!game.answers[socket.id]) {
       const question = game.questions[game.currentQuestionIndex];
       const isCorrect = answerIndex === question.correctAnswer;
-      
+
       game.answers[socket.id] = {
         answerIndex: answerIndex,
         isCorrect: isCorrect,
@@ -313,15 +313,15 @@ io.on('connection', (socket) => {
         const timeBonus = 1000;
         const timeRatio = Math.max(0, 1 - (timeElapsed / game.answerTimeLimit));
         const totalPoints = Math.round(basePoints + (timeBonus * timeRatio));
-        
+
         game.players[socket.id].score += totalPoints;
-        
+
         console.log(`Player ${game.players[socket.id].nickname} earned ${totalPoints} points (${timeElapsed.toFixed(2)}s)`);
       }
 
       // Confirm to player
       socket.emit('answer-recorded');
-      
+
       console.log(`Player ${game.players[socket.id].nickname} answered question ${game.currentQuestionIndex + 1}`);
     }
   });
@@ -333,9 +333,9 @@ io.on('connection', (socket) => {
       socket.emit('error', { message: 'Invalid PIN format' });
       return;
     }
-    
+
     const game = games[pin];
-    
+
     if (!game || game.hostId !== socket.id) {
       return;
     }
@@ -347,7 +347,7 @@ io.on('connection', (socket) => {
       return;
     }
     const question = game.questions[game.currentQuestionIndex];
-    
+
     // Calculate results
     const results = Object.entries(game.answers).map(([playerId, answer]) => {
       const player = game.players[playerId];
@@ -378,19 +378,19 @@ io.on('connection', (socket) => {
       socket.emit('error', { message: 'Invalid PIN format' });
       return;
     }
-    
+
     const game = games[pin];
-    
+
     if (!game || game.hostId !== socket.id) {
       return;
     }
 
     game.currentQuestionIndex++;
-    
+
     if (game.currentQuestionIndex >= game.questions.length) {
       // Game ended
       game.state = GameState.ENDED;
-      
+
       const finalLeaderboard = calculateLeaderboard(game);
 
       io.to(pin).emit('game-ended', {
@@ -410,7 +410,7 @@ io.on('connection', (socket) => {
       game.questionStartTime = Date.now();
 
       const question = game.questions[game.currentQuestionIndex];
-      
+
       // Send question to host
       io.to(game.hostId).emit('question-display', {
         question: question.question,
@@ -438,9 +438,9 @@ io.on('connection', (socket) => {
       socket.emit('error', { message: 'Invalid PIN format' });
       return;
     }
-    
+
     const game = games[pin];
-    
+
     if (!game || game.hostId !== socket.id) {
       socket.emit('error', { message: 'Unauthorized or game not found' });
       return;
@@ -469,11 +469,11 @@ io.on('connection', (socket) => {
   // Handle disconnection
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);
-    
+
     // Check if it's a host disconnecting
     Object.keys(games).forEach(pin => {
       const game = games[pin];
-      
+
       if (game.hostId === socket.id) {
         // Host disconnected, end game
         io.to(pin).emit('host-disconnected');
@@ -483,12 +483,12 @@ io.on('connection', (socket) => {
         // Player disconnected
         const nickname = game.players[socket.id].nickname;
         delete game.players[socket.id];
-        
+
         io.to(game.hostId).emit('player-left', {
           players: Object.values(game.players),
           playerCount: Object.keys(game.players).length
         });
-        
+
         console.log(`Player ${nickname} left game ${pin}`);
       }
     });
