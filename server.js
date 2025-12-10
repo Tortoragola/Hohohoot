@@ -96,7 +96,9 @@ io.on('connection', (socket) => {
       state: GameState.LOBBY,
       players: {},
       currentQuestionIndex: -1,
-      answers: {} // Track player answers for current question
+      answers: {}, // Track player answers for current question
+      answerTimeLimit: 20, // Default 20 seconds
+      questionStartTime: null // Track when question was shown
     };
 
     socket.join(pin);
@@ -157,10 +159,17 @@ io.on('connection', (socket) => {
   });
 
   // Host starts the game
-  socket.on('host-start-game', ({ pin }) => {
+  socket.on('host-start-game', ({ pin, answerTimeLimit }) => {
     // Input validation
     if (!pin || typeof pin !== 'string' || !/^\d{6}$/.test(pin)) {
       socket.emit('error', { message: 'Invalid PIN format' });
+      return;
+    }
+    
+    // Validate answerTimeLimit
+    const timeLimit = parseInt(answerTimeLimit);
+    if (isNaN(timeLimit) || timeLimit < 5 || timeLimit > 120) {
+      socket.emit('error', { message: 'Answer time must be between 5 and 120 seconds' });
       return;
     }
     
@@ -174,6 +183,8 @@ io.on('connection', (socket) => {
     game.state = GameState.QUESTION;
     game.currentQuestionIndex = 0;
     game.answers = {};
+    game.answerTimeLimit = timeLimit;
+    game.questionStartTime = Date.now();
 
     const question = QUESTIONS[game.currentQuestionIndex];
     
@@ -182,16 +193,18 @@ io.on('connection', (socket) => {
       question: question.question,
       answers: question.answers,
       questionNumber: game.currentQuestionIndex + 1,
-      totalQuestions: QUESTIONS.length
+      totalQuestions: QUESTIONS.length,
+      answerTimeLimit: timeLimit
     });
 
     // Send signal to players to show answer buttons
     io.to(pin).emit('show-question', {
       questionNumber: game.currentQuestionIndex + 1,
-      totalQuestions: QUESTIONS.length
+      totalQuestions: QUESTIONS.length,
+      answerTimeLimit: timeLimit
     });
 
-    console.log(`Game ${pin} started`);
+    console.log(`Game ${pin} started with ${timeLimit}s answer time`);
   });
 
   // Player submits answer
@@ -216,6 +229,22 @@ io.on('connection', (socket) => {
       return;
     }
 
+    // Check if time has expired
+    if (!game.questionStartTime) {
+      // Question start time not set, reject answer
+      socket.emit('answer-rejected', { reason: 'Unable to process answer due to timing initialization error' });
+      return;
+    }
+    
+    const currentTime = Date.now();
+    const timeElapsed = (currentTime - game.questionStartTime) / 1000; // in seconds
+    
+    if (timeElapsed > game.answerTimeLimit) {
+      // Time's up - don't accept the answer
+      socket.emit('answer-rejected', { reason: 'Time expired' });
+      return;
+    }
+
     // Record answer if not already answered
     if (!game.answers[socket.id]) {
       const question = QUESTIONS[game.currentQuestionIndex];
@@ -224,12 +253,24 @@ io.on('connection', (socket) => {
       game.answers[socket.id] = {
         answerIndex: answerIndex,
         isCorrect: isCorrect,
-        timestamp: Date.now()
+        timestamp: currentTime,
+        timeElapsed: timeElapsed
       };
 
-      // Award points (correct answer = 1000 points, could add time bonus later)
+      // Calculate time-based points (Kahoot-style scoring)
+      // Base points: 1000 for correct answer
+      // Time bonus: up to 1000 additional points based on speed
+      // Formula: basePoints + max(0, timeBonus * (1 - timeElapsed / timeLimit))
+      // The Math.max ensures no negative time bonus if elapsed time exceeds limit
       if (isCorrect) {
-        game.players[socket.id].score += 1000;
+        const basePoints = 1000;
+        const timeBonus = 1000;
+        const timeRatio = Math.max(0, 1 - (timeElapsed / game.answerTimeLimit));
+        const totalPoints = Math.round(basePoints + (timeBonus * timeRatio));
+        
+        game.players[socket.id].score += totalPoints;
+        
+        console.log(`Player ${game.players[socket.id].nickname} earned ${totalPoints} points (${timeElapsed.toFixed(2)}s)`);
       }
 
       // Confirm to player
@@ -320,6 +361,7 @@ io.on('connection', (socket) => {
       // Show next question
       game.state = GameState.QUESTION;
       game.answers = {};
+      game.questionStartTime = Date.now();
 
       const question = QUESTIONS[game.currentQuestionIndex];
       
@@ -328,13 +370,15 @@ io.on('connection', (socket) => {
         question: question.question,
         answers: question.answers,
         questionNumber: game.currentQuestionIndex + 1,
-        totalQuestions: QUESTIONS.length
+        totalQuestions: QUESTIONS.length,
+        answerTimeLimit: game.answerTimeLimit
       });
 
       // Send signal to players
       io.to(pin).emit('show-question', {
         questionNumber: game.currentQuestionIndex + 1,
-        totalQuestions: QUESTIONS.length
+        totalQuestions: QUESTIONS.length,
+        answerTimeLimit: game.answerTimeLimit
       });
 
       console.log(`Next question shown in game ${pin}`);
