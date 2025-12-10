@@ -442,16 +442,14 @@
 
             hostTimerInterval = setInterval(() => {
                 timeRemaining--;
-                
-                const percentage = (timeRemaining / timeLimit) * 100;
-                timerBarEl.style.width = percentage + '%';
-                
-                if (timeRemaining <= 0) {
+                if (timeRemaining > 0) {
+                    timerTextEl.textContent = `Time remaining: ${timeRemaining}s`;
+                    const percentage = (timeRemaining / timeLimit) * 100;
+                    timerBarEl.style.width = percentage + '%';
+                } else {
                     clearInterval(hostTimerInterval);
                     timerTextEl.textContent = `Time's up!`;
                     timerBarEl.style.width = '0%';
-                } else {
-                    timerTextEl.textContent = `Time remaining: ${timeRemaining}s`;
                 }
             }, 1000);
         }
