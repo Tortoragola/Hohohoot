@@ -303,6 +303,27 @@
 
         .remove-question-btn:hover {
             background: #c0392b;
+        .timer-bar-container {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .timer-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #2ecc71, #f1c40f, #e74c3c);
+            transition: width 0.1s linear;
+            border-radius: 15px;
+        }
+
+        .timer-text {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
         }
     </style>
 </head>
@@ -340,6 +361,17 @@
             </div>
             <div class="player-count" id="player-count">0 players joined</div>
             <div class="players-list" id="players-list"></div>
+            
+            <!-- Answer Time Configuration -->
+            <div style="background: #f7f7f7; padding: 20px; border-radius: 15px; margin: 20px 0;">
+                <label style="display: block; color: #666; margin-bottom: 10px; font-size: 1.1em;">
+                    Answer Time (seconds):
+                </label>
+                <input type="number" id="answer-time-input" value="20" min="5" max="120" 
+                       style="width: 100%; padding: 10px; font-size: 1.1em; border: 2px solid #ddd; border-radius: 8px;">
+                <div style="color: #999; font-size: 0.9em; margin-top: 5px;">Players have this much time to answer each question</div>
+            </div>
+            
             <button id="start-game-btn" disabled>Start Game</button>
             <button id="end-session-btn" class="danger">End Session</button>
         </div>
@@ -347,6 +379,10 @@
         <!-- Question Screen -->
         <div id="question-screen" class="hidden">
             <div class="status-message" id="question-status">Question 1 of 5</div>
+            <div class="timer-text" id="timer-text">Time remaining: 20s</div>
+            <div class="timer-bar-container">
+                <div class="timer-bar" id="timer-bar" style="width: 100%;"></div>
+            </div>
             <div class="question-display">
                 <div class="question-text" id="question-text"></div>
                 <div class="answers-grid" id="answers-grid"></div>
@@ -392,6 +428,13 @@
         let currentPin = null;
         let customQuestions = [];
         let questionCounter = 0;
+        // Handle connection errors
+        socket.on('connect_error', function (err) {
+            document.body.innerHTML = '<div style="text-align: center; margin-top: 50px; font-family: Arial;"><h1>Connection Error</h1><p>Unable to connect to the server. Please check your network and try again.</p></div>';
+        });
+        let currentPin = null;
+        let hostTimerInterval = null;
+        let hostAnswerTimeLimit = 20;
 
         // Configuration
         const MESSAGES = {
@@ -427,6 +470,8 @@
         const questionTextEl = document.getElementById('question-text');
         const answersGridEl = document.getElementById('answers-grid');
         const showResultsBtn = document.getElementById('show-results-btn');
+        const timerTextEl = document.getElementById('timer-text');
+        const timerBarEl = document.getElementById('timer-bar');
 
         // Results elements
         const leaderboardListEl = document.getElementById('leaderboard-list');
@@ -613,7 +658,16 @@
 
         // Start game
         startGameBtn.addEventListener('click', () => {
-            socket.emit('host-start-game', { pin: currentPin });
+            const answerTimeInput = document.getElementById('answer-time-input');
+            const answerTimeLimit = parseInt(answerTimeInput.value) || 20;
+            
+            // Validate answer time
+            if (answerTimeLimit < 5 || answerTimeLimit > 120) {
+                alert('Answer time must be between 5 and 120 seconds');
+                return;
+            }
+            
+            socket.emit('host-start-game', { pin: currentPin, answerTimeLimit });
         });
 
         // Display question
@@ -621,6 +675,7 @@
             showScreen('question');
             questionStatusEl.textContent = `Question ${data.questionNumber} of ${data.totalQuestions}`;
             questionTextEl.textContent = data.question;
+            hostAnswerTimeLimit = data.answerTimeLimit || 20;
             
             answersGridEl.innerHTML = '';
             const colors = ['red', 'blue', 'yellow', 'green'];
@@ -630,7 +685,34 @@
                 answerBox.textContent = answer;
                 answersGridEl.appendChild(answerBox);
             });
+
+            // Start host timer
+            startHostTimer(hostAnswerTimeLimit);
         });
+
+        function startHostTimer(timeLimit) {
+            // Clear any existing timer
+            if (hostTimerInterval) {
+                clearInterval(hostTimerInterval);
+            }
+
+            let timeRemaining = timeLimit;
+            timerTextEl.textContent = `Time remaining: ${timeRemaining}s`;
+            timerBarEl.style.width = '100%';
+
+            hostTimerInterval = setInterval(() => {
+                timeRemaining--;
+                if (timeRemaining > 0) {
+                    timerTextEl.textContent = `Time remaining: ${timeRemaining}s`;
+                    const percentage = (timeRemaining / timeLimit) * 100;
+                    timerBarEl.style.width = percentage + '%';
+                } else {
+                    clearInterval(hostTimerInterval);
+                    timerTextEl.textContent = `Time's up!`;
+                    timerBarEl.style.width = '0%';
+                }
+            }, 1000);
+        }
 
         // Show results
         showResultsBtn.addEventListener('click', () => {
@@ -639,6 +721,11 @@
 
         // Display results
         socket.on('question-results', (data) => {
+            // Clear host timer
+            if (hostTimerInterval) {
+                clearInterval(hostTimerInterval);
+            }
+            
             showScreen('results');
             
             // Highlight correct answer in question screen

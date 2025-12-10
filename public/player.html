@@ -197,6 +197,37 @@
             margin: 20px 0;
         }
 
+        .timer-display {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f7f7f7;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .timer-display.warning {
+            color: #f1c40f;
+            animation: pulse-warning 1s ease-in-out infinite;
+        }
+
+        .timer-display.danger {
+            color: #e74c3c;
+            animation: pulse-danger 0.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-warning {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes pulse-danger {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
         .result-message {
             font-size: 2em;
             font-weight: bold;
@@ -254,6 +285,7 @@
                 <div class="player-nickname" id="player-nickname-game"></div>
             </div>
             <div class="question-info" id="question-info">Question 1 of 5</div>
+            <div class="timer-display" id="timer-display">20</div>
             <div class="status-message" id="answer-status">Choose your answer!</div>
             <div class="buttons-grid">
                 <button class="answer-button red" data-answer="0" aria-label="Answer A - Red">
@@ -300,6 +332,8 @@
         let currentPin = null;
         let currentNickname = null;
         let hasAnswered = false;
+        let timerInterval = null;
+        let answerTimeLimit = 20;
 
         // Screen elements
         const joinScreen = document.getElementById('join-screen');
@@ -323,6 +357,7 @@
         const questionInfoEl = document.getElementById('question-info');
         const answerStatusEl = document.getElementById('answer-status');
         const answerButtons = document.querySelectorAll('.answer-button');
+        const timerDisplayEl = document.getElementById('timer-display');
 
         // Results elements
         const playerNicknameResultsEl = document.getElementById('player-nickname-results');
@@ -350,8 +385,8 @@
             } else {
                 // Wait for connection, then join
                 socket.once('connect', emitJoin);
-                // Optionally, show a message to the user
-                showError('Connecting to server, please wait...');
+                // Show a status message to the user
+                showStatus('Connecting to server, please wait...');
             }
         });
 
@@ -382,13 +417,56 @@
             questionInfoEl.textContent = `Question ${data.questionNumber} of ${data.totalQuestions}`;
             answerStatusEl.textContent = 'Choose your answer!';
             hasAnswered = false;
+            answerTimeLimit = data.answerTimeLimit || 20;
             
             // Enable all buttons
             answerButtons.forEach(btn => {
                 btn.disabled = false;
                 btn.classList.remove('selected');
             });
+
+            // Start countdown timer
+            startTimer(answerTimeLimit);
         });
+
+        function startTimer(timeLimit) {
+            // Clear any existing timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+
+            let timeRemaining = timeLimit;
+            timerDisplayEl.textContent = timeRemaining;
+            timerDisplayEl.classList.remove('warning', 'danger');
+
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    timerDisplayEl.textContent = '0';
+                    timerDisplayEl.classList.add('danger');
+                    
+                    // Disable all buttons when time is up
+                    if (!hasAnswered) {
+                        answerStatusEl.textContent = `⏱️ Time's up!`;
+                        answerButtons.forEach(btn => {
+                            btn.disabled = true;
+                        });
+                    }
+                } else {
+                    timerDisplayEl.textContent = timeRemaining;
+                    
+                    // Add visual warnings as time runs out
+                    timerDisplayEl.classList.remove('warning', 'danger');
+                    if (timeRemaining <= 5) {
+                        timerDisplayEl.classList.add('danger');
+                    } else if (timeRemaining <= 10) {
+                        timerDisplayEl.classList.add('warning');
+                    }
+                }
+            }, 1000);
+        }
 
         // Answer button clicks
         answerButtons.forEach(button => {
@@ -407,14 +485,38 @@
             hasAnswered = true;
             answerStatusEl.textContent = '✅ Answer submitted!';
             
+            // Stop the timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
             // Disable all buttons
             answerButtons.forEach(btn => {
                 btn.disabled = true;
             });
         });
 
+        // Answer rejected (time expired)
+        socket.on('answer-rejected', (data) => {
+            // Clear timer to prevent memory leak
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            answerStatusEl.textContent = '⏱️ Too late! Time expired.';
+            answerButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.remove('selected');
+            });
+        });
+
         // Question results
         socket.on('question-results', (data) => {
+            // Clear timer if it's still running
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
             showScreen('results');
             playerNicknameResultsEl.textContent = currentNickname;
             
@@ -462,12 +564,19 @@
             }, 3000);
         }
 
+        function showStatus(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+            setTimeout(() => {
+                errorMessage.classList.add('hidden');
+            }, 3000);
+        }
+
         // Socket connection error handling
         socket.on('connect_error', (error) => {
             console.error('Connection error:', error);
             showError('Connection error. Please check your internet connection.');
         });
-
 
         // Error handling
         socket.on('error', (data) => {
