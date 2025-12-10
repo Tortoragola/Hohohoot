@@ -385,8 +385,8 @@
             } else {
                 // Wait for connection, then join
                 socket.once('connect', emitJoin);
-                // Optionally, show a message to the user
-                showError('Connecting to server, please wait...');
+                // Show a status message to the user
+                showStatus('Connecting to server, please wait...');
             }
         });
 
@@ -498,6 +498,11 @@
 
         // Answer rejected (time expired)
         socket.on('answer-rejected', (data) => {
+            // Clear timer to prevent memory leak
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
             answerStatusEl.textContent = '⏱️ Too late! Time expired.';
             answerButtons.forEach(btn => {
                 btn.disabled = true;
@@ -552,6 +557,14 @@
         }
 
         function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+            setTimeout(() => {
+                errorMessage.classList.add('hidden');
+            }, 3000);
+        }
+
+        function showStatus(message) {
             errorMessage.textContent = message;
             errorMessage.classList.remove('hidden');
             setTimeout(() => {

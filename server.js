@@ -260,7 +260,8 @@ io.on('connection', (socket) => {
       // Calculate time-based points (Kahoot-style scoring)
       // Base points: 1000 for correct answer
       // Time bonus: up to 1000 additional points based on speed
-      // Formula: basePoints + (timeBonus * (1 - timeElapsed / timeLimit))
+      // Formula: basePoints + max(0, timeBonus * (1 - timeElapsed / timeLimit))
+      // The Math.max ensures no negative time bonus if elapsed time exceeds limit
       if (isCorrect) {
         const basePoints = 1000;
         const timeBonus = 1000;
