@@ -168,7 +168,7 @@ io.on('connection', (socket) => {
     
     // Validate answerTimeLimit
     const timeLimit = parseInt(answerTimeLimit);
-    if (!timeLimit || timeLimit < 5 || timeLimit > 120) {
+    if (isNaN(timeLimit) || timeLimit < 5 || timeLimit > 120) {
       socket.emit('error', { message: 'Answer time must be between 5 and 120 seconds' });
       return;
     }
@@ -230,6 +230,12 @@ io.on('connection', (socket) => {
     }
 
     // Check if time has expired
+    if (!game.questionStartTime) {
+      // Question start time not set, reject answer
+      socket.emit('answer-rejected', { reason: 'Question timing error' });
+      return;
+    }
+    
     const currentTime = Date.now();
     const timeElapsed = (currentTime - game.questionStartTime) / 1000; // in seconds
     
