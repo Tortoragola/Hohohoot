@@ -431,18 +431,40 @@
         }
 
         @keyframes correctPulseLoop {
+
             /* First 3 pulses (0-1.8s) */
-            0%, 12% { box-shadow: 0 0 0 4px #22c55e, 0 0 30px rgba(34, 197, 94, 0.5); }
-            6% { box-shadow: 0 0 0 8px #22c55e, 0 0 50px rgba(34, 197, 94, 0.8); }
-            
-            12%, 28% { box-shadow: 0 0 0 4px #22c55e, 0 0 30px rgba(34, 197, 94, 0.5); }
-            20% { box-shadow: 0 0 0 8px #22c55e, 0 0 50px rgba(34, 197, 94, 0.8); }
-            
-            28%, 44% { box-shadow: 0 0 0 4px #22c55e, 0 0 30px rgba(34, 197, 94, 0.5); }
-            36% { box-shadow: 0 0 0 8px #22c55e, 0 0 50px rgba(34, 197, 94, 0.8); }
-            
+            0%,
+            12% {
+                box-shadow: 0 0 0 4px #22c55e, 0 0 30px rgba(34, 197, 94, 0.5);
+            }
+
+            6% {
+                box-shadow: 0 0 0 8px #22c55e, 0 0 50px rgba(34, 197, 94, 0.8);
+            }
+
+            12%,
+            28% {
+                box-shadow: 0 0 0 4px #22c55e, 0 0 30px rgba(34, 197, 94, 0.5);
+            }
+
+            20% {
+                box-shadow: 0 0 0 8px #22c55e, 0 0 50px rgba(34, 197, 94, 0.8);
+            }
+
+            28%,
+            44% {
+                box-shadow: 0 0 0 4px #22c55e, 0 0 30px rgba(34, 197, 94, 0.5);
+            }
+
+            36% {
+                box-shadow: 0 0 0 8px #22c55e, 0 0 50px rgba(34, 197, 94, 0.8);
+            }
+
             /* Pause (1.8s - 3.8s = 2s sleep) */
-            44%, 100% { box-shadow: 0 0 0 4px #22c55e, 0 0 30px rgba(34, 197, 94, 0.5); }
+            44%,
+            100% {
+                box-shadow: 0 0 0 4px #22c55e, 0 0 30px rgba(34, 197, 94, 0.5);
+            }
         }
 
         .timer-container.hidden {
@@ -945,11 +967,11 @@
             answerCountEl.textContent = `0 / ${data.totalPlayers || 0} answered`;
 
             hostAnswerTimeLimit = data.answerTimeLimit || 20;
-            
+
             // Show timer again
             const timerContainer = document.querySelector('.timer-container');
             if (timerContainer) timerContainer.classList.remove('hidden');
-            
+
             startHostTimer(hostAnswerTimeLimit);
 
             const colors = ['red', 'blue', 'yellow', 'green'];
