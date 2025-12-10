@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hohohoot - Host</title>
+    <title>Hohohoot</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <style>
         * {
             margin: 0;
@@ -153,10 +155,22 @@
             color: white;
         }
 
-        .answer-box.red { background: #e74c3c; }
-        .answer-box.blue { background: #3498db; }
-        .answer-box.yellow { background: #f1c40f; color: #333; }
-        .answer-box.green { background: #2ecc71; }
+        .answer-box.red {
+            background: #e74c3c;
+        }
+
+        .answer-box.blue {
+            background: #3498db;
+        }
+
+        .answer-box.yellow {
+            background: #f1c40f;
+            color: #333;
+        }
+
+        .answer-box.green {
+            background: #2ecc71;
+        }
 
         .answer-box.correct {
             animation: pulse 0.5s ease;
@@ -164,8 +178,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
         }
 
         .leaderboard {
@@ -303,30 +324,32 @@
 
         .remove-question-btn:hover {
             background: #c0392b;
-        .timer-bar-container {
-            width: 100%;
-            height: 30px;
-            background: #e0e0e0;
-            border-radius: 15px;
-            overflow: hidden;
-            margin: 20px 0;
-        }
 
-        .timer-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #2ecc71, #f1c40f, #e74c3c);
-            transition: width 0.1s linear;
-            border-radius: 15px;
-        }
+            .timer-bar-container {
+                width: 100%;
+                height: 30px;
+                background: #e0e0e0;
+                border-radius: 15px;
+                overflow: hidden;
+                margin: 20px 0;
+            }
 
-        .timer-text {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #667eea;
-            margin: 10px 0;
-        }
+            .timer-bar {
+                height: 100%;
+                background: linear-gradient(90deg, #2ecc71, #f1c40f, #e74c3c);
+                transition: width 0.1s linear;
+                border-radius: 15px;
+            }
+
+            .timer-text {
+                font-size: 1.5em;
+                font-weight: bold;
+                color: #667eea;
+                margin: 10px 0;
+            }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🎯 Hohohoot Host</h1>
@@ -361,17 +384,18 @@
             </div>
             <div class="player-count" id="player-count">0 players joined</div>
             <div class="players-list" id="players-list"></div>
-            
+
             <!-- Answer Time Configuration -->
             <div style="background: #f7f7f7; padding: 20px; border-radius: 15px; margin: 20px 0;">
                 <label style="display: block; color: #666; margin-bottom: 10px; font-size: 1.1em;">
                     Answer Time (seconds):
                 </label>
-                <input type="number" id="answer-time-input" value="20" min="5" max="120" 
-                       style="width: 100%; padding: 10px; font-size: 1.1em; border: 2px solid #ddd; border-radius: 8px;">
-                <div style="color: #999; font-size: 0.9em; margin-top: 5px;">Players have this much time to answer each question</div>
+                <input type="number" id="answer-time-input" value="20" min="5" max="120"
+                    style="width: 100%; padding: 10px; font-size: 1.1em; border: 2px solid #ddd; border-radius: 8px;">
+                <div style="color: #999; font-size: 0.9em; margin-top: 5px;">Players have this much time to answer each
+                    question</div>
             </div>
-            
+
             <button id="start-game-btn" disabled>Start Game</button>
             <button id="end-session-btn" class="danger">End Session</button>
         </div>
@@ -419,7 +443,7 @@
             document.body.innerHTML = '<div style="text-align: center; margin-top: 50px; font-family: Arial;"><h1>Error</h1><p>Failed to load Socket.IO library. Please refresh the page.</p></div>';
             throw new Error('Socket.IO not loaded');
         }
-        
+
         const socket = io();
         // Handle Socket.IO connection errors
         socket.on('connect_error', function (err) {
@@ -481,7 +505,7 @@
         const endSessionBtn = document.getElementById('end-session-btn');
         const endSessionQuestionBtn = document.getElementById('end-session-question-btn');
         const endSessionResultsBtn = document.getElementById('end-session-results-btn');
-        
+
         // New game button
         const newGameBtn = document.getElementById('new-game-btn');
 
@@ -506,7 +530,7 @@
         function addQuestion() {
             questionCounter++;
             const questionId = `q${questionCounter}`;
-            
+
             const questionForm = document.createElement('div');
             questionForm.className = 'question-form';
             questionForm.dataset.questionId = questionId;
@@ -539,9 +563,9 @@
                     </div>
                 </div>
             `;
-            
+
             questionsContainer.appendChild(questionForm);
-            
+
             // Add event listener for remove button
             const removeBtn = questionForm.querySelector('.remove-question-btn');
             removeBtn.addEventListener('click', () => {
@@ -549,7 +573,7 @@
                 updateCreateQuizButton();
                 renumberQuestions();
             });
-            
+
             updateCreateQuizButton();
         }
 
@@ -579,39 +603,39 @@
         createQuizBtn.addEventListener('click', () => {
             const questions = [];
             const questionForms = questionsContainer.querySelectorAll('.question-form');
-            
+
             let isValid = true;
             questionForms.forEach((form, index) => {
                 const questionText = form.querySelector('textarea').value.trim();
                 const answerInputs = form.querySelectorAll('.answer-input-wrapper input[type="text"]');
                 const correctRadio = form.querySelector('input[type="radio"]:checked');
-                
+
                 if (!questionText) {
                     alert(`Question ${index + 1}: Please enter question text`);
                     isValid = false;
                     return;
                 }
-                
+
                 const answers = Array.from(answerInputs).map(input => input.value.trim());
                 if (answers.some(a => !a)) {
                     alert(`Question ${index + 1}: Please fill in all answers`);
                     isValid = false;
                     return;
                 }
-                
+
                 if (!correctRadio) {
                     alert(`Question ${index + 1}: Please select the correct answer`);
                     isValid = false;
                     return;
                 }
-                
+
                 questions.push({
                     question: questionText,
                     answers: answers,
                     correctAnswer: parseInt(correctRadio.value)
                 });
             });
-            
+
             if (isValid && questions.length > 0) {
                 // Create game with custom questions
                 socket.emit('host-create-game', { questions: questions });
@@ -660,13 +684,13 @@
         startGameBtn.addEventListener('click', () => {
             const answerTimeInput = document.getElementById('answer-time-input');
             const answerTimeLimit = parseInt(answerTimeInput.value) || 20;
-            
+
             // Validate answer time
             if (answerTimeLimit < 5 || answerTimeLimit > 120) {
                 alert('Answer time must be between 5 and 120 seconds');
                 return;
             }
-            
+
             socket.emit('host-start-game', { pin: currentPin, answerTimeLimit });
         });
 
@@ -676,7 +700,7 @@
             questionStatusEl.textContent = `Question ${data.questionNumber} of ${data.totalQuestions}`;
             questionTextEl.textContent = data.question;
             hostAnswerTimeLimit = data.answerTimeLimit || 20;
-            
+
             answersGridEl.innerHTML = '';
             const colors = ['red', 'blue', 'yellow', 'green'];
             data.answers.forEach((answer, index) => {
@@ -725,13 +749,13 @@
             if (hostTimerInterval) {
                 clearInterval(hostTimerInterval);
             }
-            
+
             showScreen('results');
-            
+
             // Highlight correct answer in question screen
             const answerBoxes = answersGridEl.querySelectorAll('.answer-box');
             answerBoxes[data.correctAnswer].classList.add('correct');
-            
+
             // Update leaderboard
             updateLeaderboard(leaderboardListEl, data.leaderboard);
         });
@@ -751,7 +775,7 @@
         endSessionBtn.addEventListener('click', handleEndSession);
         endSessionQuestionBtn.addEventListener('click', handleEndSession);
         endSessionResultsBtn.addEventListener('click', handleEndSession);
-        
+
         // New game handler
         newGameBtn.addEventListener('click', () => {
             location.reload();
@@ -785,7 +809,7 @@
             resultsScreen.classList.add('hidden');
             finalScreen.classList.add('hidden');
 
-            switch(screen) {
+            switch (screen) {
                 case 'quiz-selection':
                     quizSelectionScreen.classList.remove('hidden');
                     break;
@@ -818,4 +842,5 @@
         });
     </script>
 </body>
+
 </html>
