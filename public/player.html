@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hohohoot</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -14,167 +17,244 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            color: #fff;
         }
 
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            max-width: 500px;
+            max-width: 480px;
             width: 100%;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .home-link {
+            display: inline-block;
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            transition: color 0.2s;
+        }
+
+        .home-link:hover {
+            color: #a855f7;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .header h1 span {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Cards */
+        .card {
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #fff;
             text-align: center;
         }
 
-        h1 {
-            color: #667eea;
-            margin-bottom: 30px;
-            font-size: 2.5em;
-        }
-
-        .form-group {
-            margin: 20px 0;
-        }
-
-        label {
-            display: block;
-            color: #666;
-            margin-bottom: 10px;
-            font-size: 1.1em;
-        }
-
-        input {
-            width: 100%;
-            padding: 15px;
-            font-size: 1.2em;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            transition: border-color 0.3s ease;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        button {
-            background: #667eea;
-            color: white;
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
             border: none;
-            padding: 15px 40px;
-            font-size: 1.2em;
-            border-radius: 30px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 10px;
+            transition: all 0.2s ease;
+            font-family: inherit;
             width: 100%;
         }
 
-        button:hover {
-            background: #764ba2;
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+        }
+
+        .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
         }
 
-        button:disabled {
-            background: #ccc;
+        .btn:disabled {
+            opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
+            transform: none !important;
         }
 
-        .status-message {
-            font-size: 1.3em;
-            color: #666;
-            margin: 30px 0;
-            padding: 20px;
-            background: #f7f7f7;
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #a1a1aa;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            font-size: 1.25rem;
+            font-family: inherit;
+            background: #27272a;
+            border: 1px solid #3f3f46;
             border-radius: 10px;
+            color: #fff;
+            transition: all 0.2s;
+            text-align: center;
+            letter-spacing: 0.1em;
         }
 
+        .form-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #52525b;
+            letter-spacing: normal;
+        }
+
+        /* Player Info */
         .player-info {
-            background: #f7f7f7;
-            padding: 20px;
-            border-radius: 15px;
-            margin: 20px 0;
+            text-align: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+            border-radius: 16px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            margin-bottom: 1.5rem;
         }
 
         .player-nickname {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #667eea;
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .game-pin {
-            font-size: 1.2em;
-            color: #666;
-            margin-top: 10px;
+        .player-pin {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
         }
 
-        .buttons-grid {
+        /* Status Message */
+        .status-message {
+            text-align: center;
+            padding: 2rem;
+            color: #a1a1aa;
+            font-size: 1.1rem;
+        }
+
+        .status-message .emoji {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        /* Answer Buttons */
+        .answers-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin: 30px 0;
-            min-height: 300px;
+            gap: 1rem;
+            margin-bottom: 1rem;
         }
 
-        .answer-button {
+        .answer-btn {
+            aspect-ratio: 1;
             border: none;
-            border-radius: 15px;
-            font-size: 1.5em;
-            font-weight: bold;
+            border-radius: 16px;
+            font-size: 2rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            padding: 40px 20px;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            color: white;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            color: #fff;
+            position: relative;
+            overflow: hidden;
         }
 
-        .answer-button:hover:not(:disabled) {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        .answer-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0);
+            transition: background 0.2s;
         }
 
-        .answer-button:active:not(:disabled) {
-            transform: translateY(-2px);
+        .answer-btn:hover:not(:disabled)::before {
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        .answer-button:disabled {
+        .answer-btn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        .answer-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
         }
 
-        .answer-button.red {
-            background: #e74c3c;
+        .answer-btn.red {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
         }
 
-        .answer-button.blue {
-            background: #3498db;
+        .answer-btn.blue {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
         }
 
-        .answer-button.yellow {
-            background: #f1c40f;
-            color: #333;
+        .answer-btn.yellow {
+            background: linear-gradient(135deg, #eab308, #ca8a04);
         }
 
-        .answer-button.green {
-            background: #2ecc71;
+        .answer-btn.green {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
         }
 
-        .answer-button.selected {
-            animation: pulse 0.5s ease;
+        .answer-btn.selected {
+            animation: pulse 0.3s ease;
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.5);
         }
 
         @keyframes pulse {
@@ -185,49 +265,33 @@
             }
 
             50% {
-                transform: scale(0.95);
+                transform: scale(0.92);
             }
         }
 
-        .hidden {
-            display: none;
-        }
-
-        .error-message {
-            color: #e74c3c;
-            margin: 20px 0;
-            font-size: 1.1em;
-        }
-
-        .question-info {
-            font-size: 1.5em;
-            color: #667eea;
-            font-weight: bold;
-            margin: 20px 0;
-        }
-
+        /* Timer */
         .timer-display {
-            font-size: 3em;
-            font-weight: bold;
-            color: #667eea;
-            margin: 20px 0;
-            padding: 20px;
-            background: #f7f7f7;
-            border-radius: 15px;
-            transition: all 0.3s ease;
+            text-align: center;
+            margin-bottom: 1.5rem;
         }
 
-        .timer-display.warning {
-            color: #f1c40f;
-            animation: pulse-warning 1s ease-in-out infinite;
+        .timer-number {
+            font-size: 4rem;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1;
         }
 
-        .timer-display.danger {
-            color: #e74c3c;
+        .timer-number.warning {
+            color: #eab308;
+        }
+
+        .timer-number.danger {
+            color: #ef4444;
             animation: pulse-danger 0.5s ease-in-out infinite;
         }
 
-        @keyframes pulse-warning {
+        @keyframes pulse-danger {
 
             0%,
             100% {
@@ -239,327 +303,470 @@
             }
         }
 
-        @keyframes pulse-danger {
+        .timer-bar {
+            height: 6px;
+            background: #27272a;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
 
-            0%,
-            100% {
-                transform: scale(1);
+        .timer-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+            border-radius: 3px;
+            transition: width 0.1s linear;
+        }
+
+        /* Question Info */
+        .question-info {
+            text-align: center;
+            font-size: 1rem;
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+
+        /* Result Display */
+        .result-display {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .result-emoji {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-text.correct {
+            color: #22c55e;
+        }
+
+        .result-text.incorrect {
+            color: #ef4444;
+        }
+
+        .result-text.timeout {
+            color: #eab308;
+        }
+
+        .result-score {
+            font-size: 1rem;
+            color: #6b7280;
+        }
+
+        .result-score span {
+            color: #a855f7;
+            font-weight: 600;
+        }
+
+        /* Leaderboard */
+        .leaderboard-title {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 1.5rem;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #27272a;
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+        }
+
+        .leaderboard-rank {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+            border-radius: 10px;
+            background: #3f3f46;
+            color: #fff;
+        }
+
+        .leaderboard-item:nth-child(1) .leaderboard-rank {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        }
+
+        .leaderboard-item:nth-child(2) .leaderboard-rank {
+            background: linear-gradient(135deg, #94a3b8, #64748b);
+        }
+
+        .leaderboard-item:nth-child(3) .leaderboard-rank {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+        }
+
+        .leaderboard-name {
+            flex: 1;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .leaderboard-name.you {
+            color: #a855f7;
+        }
+
+        .leaderboard-score {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #a855f7;
+        }
+
+        /* Error */
+        .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
+        /* Utility */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-2 {
+            margin-bottom: 1rem;
+        }
+
+        .mt-2 {
+            margin-top: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 400px) {
+            .answer-btn {
+                font-size: 1.5rem;
             }
 
-            50% {
-                transform: scale(1.1);
+            .timer-number {
+                font-size: 3rem;
             }
-        }
-
-        .result-message {
-            font-size: 2em;
-            font-weight: bold;
-            margin: 30px 0;
-            padding: 30px;
-            border-radius: 15px;
-        }
-
-        .result-correct {
-            background: #2ecc71;
-            color: white;
-        }
-
-        .result-incorrect {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .result-waiting {
-            background: #f1c40f;
-            color: #333;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>🎮 Hohohoot Player</h1>
+        <div class="header">
+            <a href="/" class="home-link">← Back to Menu</a>
+            <h1>🎯 <span>Hohohoot</span></h1>
+        </div>
 
         <!-- Join Screen -->
-        <div id="join-screen">
+        <div id="join-screen" class="card">
+            <div class="card-title">Join a Game</div>
             <div class="form-group">
-                <label for="pin-input">Enter Game PIN:</label>
-                <input type="text" inputmode="numeric" pattern="[0-9]{6}" id="pin-input" placeholder="123456"
-                    maxlength="6">
+                <label class="form-label">Game PIN</label>
+                <input type="text" id="pin-input" class="form-input" placeholder="Enter 6-digit PIN" maxlength="6"
+                    inputmode="numeric" pattern="[0-9]*">
             </div>
             <div class="form-group">
-                <label for="nickname-input">Your Nickname:</label>
-                <input type="text" id="nickname-input" placeholder="Enter your name" maxlength="20">
+                <label class="form-label">Your Nickname</label>
+                <input type="text" id="nickname-input" class="form-input" placeholder="Enter your name" maxlength="20">
             </div>
-            <button id="join-btn">Join Game</button>
+            <button id="join-btn" class="btn btn-primary" disabled>Join Game</button>
             <div id="error-message" class="error-message hidden"></div>
         </div>
 
         <!-- Waiting Screen -->
-        <div id="waiting-screen" class="hidden">
+        <div id="waiting-screen" class="card hidden">
             <div class="player-info">
-                <div class="player-nickname" id="player-nickname"></div>
-                <div class="game-pin" id="game-pin-display"></div>
+                <div class="player-nickname" id="display-nickname">Player</div>
+                <div class="player-pin">Game PIN: <span id="display-pin">------</span></div>
             </div>
-            <div class="status-message">✋ Waiting for host to start the game...</div>
+            <div class="status-message">
+                <span class="emoji">⏳</span>
+                Waiting for host to start the game...
+            </div>
         </div>
 
-        <!-- Playing Screen -->
-        <div id="playing-screen" class="hidden">
-            <div class="player-info">
-                <div class="player-nickname" id="player-nickname-game"></div>
-            </div>
+        <!-- Question Screen -->
+        <div id="question-screen" class="card hidden">
             <div class="question-info" id="question-info">Question 1 of 5</div>
-            <div class="timer-display" id="timer-display">20</div>
-            <div class="status-message" id="answer-status">Choose your answer!</div>
-            <div class="buttons-grid">
-                <button class="answer-button red" data-answer="0" aria-label="Answer A - Red">
-                    <span style="font-size: 3em;">🔴</span>
-                </button>
-                <button class="answer-button blue" data-answer="1" aria-label="Answer B - Blue">
-                    <span style="font-size: 3em;">🔵</span>
-                </button>
-                <button class="answer-button yellow" data-answer="2" aria-label="Answer C - Yellow">
-                    <span style="font-size: 3em;">🟡</span>
-                </button>
-                <button class="answer-button green" data-answer="3" aria-label="Answer D - Green">
-                    <span style="font-size: 3em;">🟢</span>
-                </button>
+            <div class="timer-display">
+                <div class="timer-number" id="timer-number">20</div>
+                <div class="timer-bar">
+                    <div class="timer-bar-fill" id="timer-bar" style="width: 100%;"></div>
+                </div>
+            </div>
+            <div class="answers-grid">
+                <button class="answer-btn red" data-answer="0">🔴</button>
+                <button class="answer-btn blue" data-answer="1">🔵</button>
+                <button class="answer-btn yellow" data-answer="2">🟡</button>
+                <button class="answer-btn green" data-answer="3">🟢</button>
             </div>
         </div>
 
-        <!-- Results Screen -->
-        <div id="results-screen" class="hidden">
-            <div class="player-info">
-                <div class="player-nickname" id="player-nickname-results"></div>
+        <!-- Answer Submitted Screen -->
+        <div id="submitted-screen" class="card hidden">
+            <div class="status-message">
+                <span class="emoji">✅</span>
+                Answer submitted!<br>
+                Waiting for results...
             </div>
-            <div id="result-display"></div>
-            <div class="status-message">⏳ Waiting for next question...</div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="card hidden">
+            <div class="result-display">
+                <div class="result-emoji" id="result-emoji">✅</div>
+                <div class="result-text" id="result-text">Correct!</div>
+                <div class="result-score">Your score: <span id="result-score">0</span></div>
+            </div>
         </div>
 
         <!-- Final Screen -->
-        <div id="final-screen" class="hidden">
-            <h2 style="color: #667eea; margin-bottom: 30px;">🎉 Game Over!</h2>
-            <div class="status-message">Thanks for playing!</div>
-            <button onclick="location.reload()">Play Again</button>
+        <div id="final-screen" class="card hidden">
+            <div class="leaderboard-title">🎉 Game Over!</div>
+            <div id="final-leaderboard"></div>
+            <button id="play-again-btn" class="btn btn-primary mt-2">Play Again</button>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // Ensure Socket.IO is loaded before initializing
+        // Ensure Socket.IO is loaded
         if (typeof io === 'undefined') {
-            document.body.innerHTML = '<div style="text-align: center; margin-top: 50px; font-family: Arial;"><h1>Error</h1><p>Failed to load Socket.IO library. Please refresh the page.</p></div>';
+            document.body.innerHTML = '<div style="text-align: center; margin-top: 50px; color: #fff;"><h1>Error</h1><p>Failed to load Socket.IO library. Please refresh the page.</p></div>';
             throw new Error('Socket.IO not loaded');
         }
 
         const socket = io();
+
+        socket.on('connect_error', function (err) {
+            document.body.innerHTML = '<div style="text-align: center; margin-top: 50px; color: #fff;"><h1>Connection Error</h1><p>Failed to connect to the server. Please check your internet connection and try again.</p></div>';
+        });
+
         let currentPin = null;
         let currentNickname = null;
+        let currentScore = 0;
+        let playerTimerInterval = null;
+        let playerAnswerTimeLimit = 20;
         let hasAnswered = false;
-        let timerInterval = null;
-        let answerTimeLimit = 20;
 
-        // Screen elements
+        // Elements
         const joinScreen = document.getElementById('join-screen');
         const waitingScreen = document.getElementById('waiting-screen');
-        const playingScreen = document.getElementById('playing-screen');
-        const resultsScreen = document.getElementById('results-screen');
+        const questionScreen = document.getElementById('question-screen');
+        const submittedScreen = document.getElementById('submitted-screen');
+        const resultScreen = document.getElementById('result-screen');
         const finalScreen = document.getElementById('final-screen');
 
-        // Join elements
         const pinInput = document.getElementById('pin-input');
         const nicknameInput = document.getElementById('nickname-input');
         const joinBtn = document.getElementById('join-btn');
         const errorMessage = document.getElementById('error-message');
 
-        // Waiting elements
-        const playerNicknameEl = document.getElementById('player-nickname');
-        const gamePinDisplayEl = document.getElementById('game-pin-display');
+        const displayNickname = document.getElementById('display-nickname');
+        const displayPin = document.getElementById('display-pin');
 
-        // Playing elements
-        const playerNicknameGameEl = document.getElementById('player-nickname-game');
-        const questionInfoEl = document.getElementById('question-info');
-        const answerStatusEl = document.getElementById('answer-status');
-        const answerButtons = document.querySelectorAll('.answer-button');
-        const timerDisplayEl = document.getElementById('timer-display');
+        const questionInfo = document.getElementById('question-info');
+        const timerNumber = document.getElementById('timer-number');
+        const timerBar = document.getElementById('timer-bar');
+        const answerBtns = document.querySelectorAll('.answer-btn');
 
-        // Results elements
-        const playerNicknameResultsEl = document.getElementById('player-nickname-results');
-        const resultDisplayEl = document.getElementById('result-display');
+        const resultEmoji = document.getElementById('result-emoji');
+        const resultText = document.getElementById('result-text');
+        const resultScore = document.getElementById('result-score');
+
+        const finalLeaderboard = document.getElementById('final-leaderboard');
+        const playAgainBtn = document.getElementById('play-again-btn');
+
+        // Input validation
+        function validateInputs() {
+            const pin = pinInput.value.trim();
+            const nickname = nicknameInput.value.trim();
+            joinBtn.disabled = !(pin.length === 6 && /^\d{6}$/.test(pin) && nickname.length >= 1);
+        }
+
+        pinInput.addEventListener('input', validateInputs);
+        nicknameInput.addEventListener('input', validateInputs);
 
         // Join game
         joinBtn.addEventListener('click', () => {
             const pin = pinInput.value.trim();
             const nickname = nicknameInput.value.trim();
 
-            if (!pin || !nickname) {
-                showError('Please enter both PIN and nickname');
-                return;
-            }
+            currentPin = pin;
+            currentNickname = nickname;
 
-            // Ensure socket is connected, or wait for connection
-            const emitJoin = () => {
-                currentPin = pin;
-                currentNickname = nickname;
-                socket.emit('player-join', { pin, nickname });
-            };
-
-            if (socket.connected) {
-                emitJoin();
-            } else {
-                // Wait for connection, then join
-                socket.once('connect', emitJoin);
-                // Show a status message to the user
-                showStatus('Connecting to server, please wait...');
-            }
+            socket.emit('player-join', { pin, nickname });
         });
 
-        // Allow Enter key to join
-        nicknameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                joinBtn.click();
-            }
-        });
-
+        // Enter key support
         pinInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                nicknameInput.focus();
-            }
+            if (e.key === 'Enter') nicknameInput.focus();
+        });
+
+        nicknameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !joinBtn.disabled) joinBtn.click();
         });
 
         // Join success
         socket.on('join-success', (data) => {
+            displayNickname.textContent = currentNickname;
+            displayPin.textContent = currentPin;
             showScreen('waiting');
-            playerNicknameEl.textContent = data.nickname;
-            gamePinDisplayEl.textContent = `Game PIN: ${data.pin}`;
+        });
+
+        // Error handling
+        socket.on('error', (data) => {
+            errorMessage.textContent = data.message;
+            errorMessage.classList.remove('hidden');
         });
 
         // Show question
         socket.on('show-question', (data) => {
-            showScreen('playing');
-            playerNicknameGameEl.textContent = currentNickname;
-            questionInfoEl.textContent = `Question ${data.questionNumber} of ${data.totalQuestions}`;
-            answerStatusEl.textContent = 'Choose your answer!';
             hasAnswered = false;
-            answerTimeLimit = data.answerTimeLimit || 20;
+            questionInfo.textContent = `Question ${data.questionNumber} of ${data.totalQuestions}`;
 
-            // Enable all buttons
-            answerButtons.forEach(btn => {
+            playerAnswerTimeLimit = data.answerTimeLimit || 20;
+            startPlayerTimer(playerAnswerTimeLimit);
+
+            answerBtns.forEach(btn => {
                 btn.disabled = false;
                 btn.classList.remove('selected');
             });
 
-            // Start countdown timer
-            startTimer(answerTimeLimit);
+            showScreen('question');
         });
 
-        function startTimer(timeLimit) {
-            // Clear any existing timer
-            if (timerInterval) {
-                clearInterval(timerInterval);
-            }
+        function startPlayerTimer(duration) {
+            if (playerTimerInterval) clearInterval(playerTimerInterval);
 
-            let timeRemaining = timeLimit;
-            timerDisplayEl.textContent = timeRemaining;
-            timerDisplayEl.classList.remove('warning', 'danger');
+            let timeLeft = duration;
+            timerNumber.textContent = timeLeft;
+            timerNumber.className = 'timer-number';
+            timerBar.style.width = '100%';
 
-            timerInterval = setInterval(() => {
-                timeRemaining--;
+            playerTimerInterval = setInterval(() => {
+                timeLeft--;
+                timerNumber.textContent = timeLeft;
 
-                if (timeRemaining <= 0) {
-                    clearInterval(timerInterval);
-                    timerDisplayEl.textContent = '0';
-                    timerDisplayEl.classList.add('danger');
+                const percentage = (timeLeft / duration) * 100;
+                timerBar.style.width = percentage + '%';
 
-                    // Disable all buttons when time is up
+                if (timeLeft <= 5) {
+                    timerNumber.className = 'timer-number danger';
+                } else if (timeLeft <= 10) {
+                    timerNumber.className = 'timer-number warning';
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(playerTimerInterval);
                     if (!hasAnswered) {
-                        answerStatusEl.textContent = `⏱️ Time's up!`;
-                        answerButtons.forEach(btn => {
-                            btn.disabled = true;
-                        });
-                    }
-                } else {
-                    timerDisplayEl.textContent = timeRemaining;
-
-                    // Add visual warnings as time runs out
-                    timerDisplayEl.classList.remove('warning', 'danger');
-                    if (timeRemaining <= 5) {
-                        timerDisplayEl.classList.add('danger');
-                    } else if (timeRemaining <= 10) {
-                        timerDisplayEl.classList.add('warning');
+                        answerBtns.forEach(btn => btn.disabled = true);
                     }
                 }
             }, 1000);
         }
 
-        // Answer button clicks
-        answerButtons.forEach(button => {
-            button.addEventListener('click', () => {
+        // Answer buttons
+        answerBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
                 if (hasAnswered) return;
 
-                const answerIndex = parseInt(button.dataset.answer);
-                socket.emit('player-answer', { pin: currentPin, answerIndex });
+                hasAnswered = true;
+                const answer = parseInt(btn.dataset.answer);
 
-                button.classList.add('selected');
+                btn.classList.add('selected');
+                answerBtns.forEach(b => b.disabled = true);
+
+                if (playerTimerInterval) clearInterval(playerTimerInterval);
+
+                socket.emit('player-answer', {
+                    pin: currentPin,
+                    answer: answer
+                });
+
+                showScreen('submitted');
             });
         });
 
         // Answer recorded
-        socket.on('answer-recorded', () => {
-            hasAnswered = true;
-            answerStatusEl.textContent = '✅ Answer submitted!';
-
-            // Stop the timer
-            if (timerInterval) {
-                clearInterval(timerInterval);
-            }
-
-            // Disable all buttons
-            answerButtons.forEach(btn => {
-                btn.disabled = true;
-            });
-        });
-
-        // Answer rejected (time expired)
-        socket.on('answer-rejected', (data) => {
-            // Clear timer to prevent memory leak
-            if (timerInterval) {
-                clearInterval(timerInterval);
-            }
-
-            answerStatusEl.textContent = '⏱️ Too late! Time expired.';
-            answerButtons.forEach(btn => {
-                btn.disabled = true;
-                btn.classList.remove('selected');
-            });
+        socket.on('answer-recorded', (data) => {
+            // Already showing submitted screen
         });
 
         // Question results
         socket.on('question-results', (data) => {
-            // Clear timer if it's still running
-            if (timerInterval) {
-                clearInterval(timerInterval);
+            const myResult = data.playerResults ? data.playerResults[socket.id] : null;
+
+            if (myResult) {
+                currentScore = myResult.totalScore;
+
+                if (myResult.correct) {
+                    resultEmoji.textContent = '✅';
+                    resultText.textContent = 'Correct!';
+                    resultText.className = 'result-text correct';
+                } else if (myResult.answered) {
+                    resultEmoji.textContent = '❌';
+                    resultText.textContent = 'Incorrect';
+                    resultText.className = 'result-text incorrect';
+                } else {
+                    resultEmoji.textContent = '⏰';
+                    resultText.textContent = 'Time\'s up!';
+                    resultText.className = 'result-text timeout';
+                }
+
+                resultScore.textContent = currentScore;
             }
 
-            showScreen('results');
-            playerNicknameResultsEl.textContent = currentNickname;
-
-            // Show result based on correctness (we don't track this on player side for now)
-            // Just show waiting message
-            resultDisplayEl.innerHTML = '<div class="result-message result-waiting">Check the main screen for results! 📊</div>';
+            showScreen('result');
         });
 
         // Game ended
         socket.on('game-ended', (data) => {
+            if (playerTimerInterval) clearInterval(playerTimerInterval);
+
+            finalLeaderboard.innerHTML = data.leaderboard.map((player, index) => {
+                const isMe = player.odentity === socket.id || player.nickname === currentNickname;
+                return `<div class="leaderboard-item">
+                    <div class="leaderboard-rank">${index + 1}</div>
+                    <div class="leaderboard-name ${isMe ? 'you' : ''}">${player.nickname}${isMe ? ' (You)' : ''}</div>
+                    <div class="leaderboard-score">${player.score}</div>
+                </div>`;
+            }).join('');
+
             showScreen('final');
+        });
+
+        // Host disconnected
+        socket.on('host-disconnected', () => {
+            alert('Host disconnected. Game ended.');
+            location.reload();
+        });
+
+        // Play again
+        playAgainBtn.addEventListener('click', () => {
+            location.reload();
         });
 
         function showScreen(screen) {
             joinScreen.classList.add('hidden');
             waitingScreen.classList.add('hidden');
-            playingScreen.classList.add('hidden');
-            resultsScreen.classList.add('hidden');
+            questionScreen.classList.add('hidden');
+            submittedScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
             finalScreen.classList.add('hidden');
 
             switch (screen) {
@@ -569,49 +776,20 @@
                 case 'waiting':
                     waitingScreen.classList.remove('hidden');
                     break;
-                case 'playing':
-                    playingScreen.classList.remove('hidden');
+                case 'question':
+                    questionScreen.classList.remove('hidden');
                     break;
-                case 'results':
-                    resultsScreen.classList.remove('hidden');
+                case 'submitted':
+                    submittedScreen.classList.remove('hidden');
+                    break;
+                case 'result':
+                    resultScreen.classList.remove('hidden');
                     break;
                 case 'final':
                     finalScreen.classList.remove('hidden');
                     break;
             }
         }
-
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.classList.remove('hidden');
-            setTimeout(() => {
-                errorMessage.classList.add('hidden');
-            }, 3000);
-        }
-
-        function showStatus(message) {
-            errorMessage.textContent = message;
-            errorMessage.classList.remove('hidden');
-            setTimeout(() => {
-                errorMessage.classList.add('hidden');
-            }, 3000);
-        }
-
-        // Socket connection error handling
-        socket.on('connect_error', (error) => {
-            console.error('Connection error:', error);
-            showError('Connection error. Please check your internet connection.');
-        });
-
-        // Error handling
-        socket.on('error', (data) => {
-            showError(data.message);
-        });
-
-        socket.on('host-disconnected', () => {
-            alert('Host disconnected. Game ended.');
-            location.reload();
-        });
     </script>
 </body>
 

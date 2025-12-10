@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hohohoot</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -14,425 +17,661 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            color: #fff;
         }
 
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            max-width: 800px;
+            max-width: 600px;
             width: 100%;
+        }
+
+        /* Header */
+        .header {
             text-align: center;
+            margin-bottom: 2rem;
         }
 
-        h1 {
-            color: #667eea;
-            margin-bottom: 30px;
-            font-size: 2.5em;
+        .home-link {
+            display: inline-block;
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            transition: color 0.2s;
         }
 
+        .home-link:hover {
+            color: #a855f7;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .header h1 span {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Cards */
+        .card {
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #fff;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e, #10b981);
+            color: #fff;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid #3f3f46;
+            color: #a1a1aa;
+        }
+
+        .btn-ghost:hover:not(:disabled) {
+            background: #27272a;
+            border-color: #52525b;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* Button Group */
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+            min-width: 140px;
+        }
+
+        /* PIN Display */
         .pin-display {
-            background: #f7f7f7;
-            padding: 30px;
-            border-radius: 15px;
-            margin: 30px 0;
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+            border-radius: 16px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            margin-bottom: 1.5rem;
         }
 
         .pin-label {
-            font-size: 1.2em;
-            color: #666;
-            margin-bottom: 10px;
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
         .pin-number {
-            font-size: 4em;
-            font-weight: bold;
-            color: #667eea;
-            letter-spacing: 10px;
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: 0.2em;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
+        /* Players List */
         .player-count {
-            font-size: 1.5em;
-            color: #764ba2;
-            margin: 20px 0;
+            font-size: 1rem;
+            color: #6b7280;
+            margin-bottom: 1rem;
         }
 
-        .players-list {
-            background: #f7f7f7;
-            padding: 20px;
-            border-radius: 15px;
-            margin: 20px 0;
-            max-height: 200px;
-            overflow-y: auto;
+        .player-count span {
+            color: #a855f7;
+            font-weight: 600;
         }
 
-        .player-item {
-            background: white;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 8px;
+        .players-grid {
             display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            min-height: 40px;
+        }
+
+        .player-chip {
+            display: inline-flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #27272a;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            color: #fff;
         }
 
-        .player-name {
-            font-weight: bold;
-            color: #333;
+        .player-chip .score {
+            color: #a855f7;
+            font-weight: 600;
         }
 
-        .player-score {
-            color: #667eea;
-            font-weight: bold;
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.25rem;
         }
 
-        button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.2em;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 10px;
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #a1a1aa;
+            margin-bottom: 0.5rem;
         }
 
-        button:hover {
-            background: #764ba2;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        button.danger {
-            background: #e74c3c;
-        }
-
-        button.danger:hover {
-            background: #c0392b;
-        }
-
-        .question-display {
-            background: #f7f7f7;
-            padding: 30px;
-            border-radius: 15px;
-            margin: 20px 0;
-        }
-
-        .question-text {
-            font-size: 2em;
-            color: #333;
-            margin-bottom: 30px;
-            font-weight: bold;
-        }
-
-        .answers-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .answer-box {
-            padding: 20px;
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            font-size: 1rem;
+            font-family: inherit;
+            background: #27272a;
+            border: 1px solid #3f3f46;
             border-radius: 10px;
-            font-size: 1.2em;
-            font-weight: bold;
-            color: white;
+            color: #fff;
+            transition: all 0.2s;
         }
 
-        .answer-box.red {
-            background: #e74c3c;
+        .form-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
-        .answer-box.blue {
-            background: #3498db;
+        .form-input::placeholder {
+            color: #52525b;
         }
 
-        .answer-box.yellow {
-            background: #f1c40f;
-            color: #333;
+        .form-hint {
+            font-size: 0.75rem;
+            color: #52525b;
+            margin-top: 0.5rem;
         }
 
-        .answer-box.green {
-            background: #2ecc71;
-        }
-
-        .answer-box.correct {
-            animation: pulse 0.5s ease;
-            box-shadow: 0 0 20px rgba(46, 204, 113, 0.8);
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
-        }
-
-        .leaderboard {
-            background: #f7f7f7;
-            padding: 30px;
-            border-radius: 15px;
-            margin: 20px 0;
-        }
-
-        .leaderboard-title {
-            font-size: 2em;
-            color: #667eea;
-            margin-bottom: 20px;
-        }
-
-        .leaderboard-item {
-            background: white;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .leaderboard-rank {
-            font-size: 2em;
-            font-weight: bold;
-            color: #667eea;
-            width: 60px;
-        }
-
-        .leaderboard-name {
-            flex: 1;
-            text-align: left;
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .leaderboard-score {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #764ba2;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .status-message {
-            font-size: 1.2em;
-            color: #666;
-            margin: 20px 0;
-        }
-
+        /* Question Form */
         .question-form {
-            background: #f7f7f7;
-            padding: 20px;
-            border-radius: 15px;
-            margin: 15px 0;
+            background: #27272a;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
             position: relative;
         }
 
         .question-form h3 {
-            color: #667eea;
-            margin-bottom: 15px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #a855f7;
+            margin-bottom: 1rem;
         }
 
-        .form-group {
-            margin-bottom: 15px;
-            text-align: left;
+        .question-form .remove-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #3f3f46;
+            border: none;
+            color: #a1a1aa;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
         }
 
-        .form-group label {
-            display: block;
-            color: #333;
-            font-weight: bold;
-            margin-bottom: 5px;
+        .question-form .remove-btn:hover {
+            background: #ef4444;
+            color: #fff;
         }
 
-        .form-group input[type="text"],
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
+        .answer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        @media (max-width: 500px) {
+            .answer-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .answer-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 0;
+        }
+
+        .answer-option input[type="radio"] {
+            accent-color: #a855f7;
+            flex-shrink: 0;
+        }
+
+        .answer-option input[type="text"] {
+            flex: 1;
+            min-width: 0;
+            padding: 0.625rem 0.75rem;
+            font-size: 0.875rem;
+            background: #18181b;
+            border: 1px solid #3f3f46;
             border-radius: 8px;
-            font-size: 1em;
+            color: #fff;
             font-family: inherit;
         }
 
-        .form-group textarea {
-            resize: vertical;
-            min-height: 60px;
-        }
-
-        .form-group input[type="text"]:focus,
-        .form-group textarea:focus {
+        .answer-option input[type="text"]:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #6366f1;
         }
 
-        .answer-inputs {
+        .answer-option.red input[type="text"] {
+            border-left: 3px solid #ef4444;
+        }
+
+        .answer-option.blue input[type="text"] {
+            border-left: 3px solid #3b82f6;
+        }
+
+        .answer-option.yellow input[type="text"] {
+            border-left: 3px solid #eab308;
+        }
+
+        .answer-option.green input[type="text"] {
+            border-left: 3px solid #22c55e;
+        }
+
+        /* Question Display */
+        .question-status {
+            text-align: center;
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+
+        .question-text {
+            text-align: center;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 2rem;
+            line-height: 1.3;
+        }
+
+        .answers-display {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 1rem;
+            margin-bottom: 2rem;
         }
 
-        .answer-input-wrapper {
+        .answer-box {
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .answer-box.red {
+            background: #ef4444;
+        }
+
+        .answer-box.blue {
+            background: #3b82f6;
+        }
+
+        .answer-box.yellow {
+            background: #eab308;
+            color: #18181b;
+        }
+
+        .answer-box.green {
+            background: #22c55e;
+        }
+
+        .answer-box.correct {
+            box-shadow: 0 0 0 4px #22c55e, 0 0 30px rgba(34, 197, 94, 0.5);
+            transform: scale(1.02);
+        }
+
+        /* Timer */
+        .timer-container {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .timer-text {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.75rem;
+        }
+
+        .timer-text.warning {
+            color: #eab308;
+        }
+
+        .timer-text.danger {
+            color: #ef4444;
+        }
+
+        .timer-bar {
+            height: 6px;
+            background: #27272a;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .timer-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+            border-radius: 3px;
+            transition: width 0.1s linear;
+        }
+
+        /* Leaderboard */
+        .leaderboard-title {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 1.5rem;
+        }
+
+        .leaderboard-item {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 1rem;
+            padding: 1rem;
+            background: #27272a;
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
         }
 
-        .answer-input-wrapper input[type="radio"] {
-            cursor: pointer;
+        .leaderboard-rank {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+            border-radius: 10px;
+            background: #3f3f46;
+            color: #fff;
         }
 
-        .answer-input-wrapper input[type="text"] {
+        .leaderboard-item:nth-child(1) .leaderboard-rank {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        }
+
+        .leaderboard-item:nth-child(2) .leaderboard-rank {
+            background: linear-gradient(135deg, #94a3b8, #64748b);
+        }
+
+        .leaderboard-item:nth-child(3) .leaderboard-rank {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+        }
+
+        .leaderboard-name {
             flex: 1;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
         }
 
-        .remove-question-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
+        .leaderboard-score {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #a855f7;
         }
 
-        .remove-question-btn:hover {
-            background: #c0392b;
+        /* Utility */
+        .hidden {
+            display: none !important;
+        }
 
-            .timer-bar-container {
-                width: 100%;
-                height: 30px;
-                background: #e0e0e0;
-                border-radius: 15px;
-                overflow: hidden;
-                margin: 20px 0;
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-1 {
+            margin-bottom: 0.5rem;
+        }
+
+        .mb-2 {
+            margin-bottom: 1rem;
+        }
+
+        .mb-3 {
+            margin-bottom: 1.5rem;
+        }
+
+        .mt-2 {
+            margin-top: 1rem;
+        }
+
+        .mt-3 {
+            margin-top: 1.5rem;
+        }
+
+        .questions-scroll {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .questions-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .questions-scroll::-webkit-scrollbar-track {
+            background: #27272a;
+            border-radius: 3px;
+        }
+
+        .questions-scroll::-webkit-scrollbar-thumb {
+            background: #52525b;
+            border-radius: 3px;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 10px;
             }
 
-            .timer-bar {
-                height: 100%;
-                background: linear-gradient(90deg, #2ecc71, #f1c40f, #e74c3c);
-                transition: width 0.1s linear;
-                border-radius: 15px;
+            .card {
+                padding: 1.5rem;
             }
 
-            .timer-text {
-                font-size: 1.5em;
-                font-weight: bold;
-                color: #667eea;
-                margin: 10px 0;
+            .pin-number {
+                font-size: 2.5rem;
             }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn-group .btn {
+                min-width: auto;
+            }
+
+            .answers-display {
+                grid-template-columns: 1fr;
+            }
+
+            .answer-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>🎯 Hohohoot Host</h1>
+        <div class="header">
+            <a href="/" class="home-link">← Back to Menu</a>
+            <h1>🎯 <span>Hohohoot</span> Host</h1>
+        </div>
 
         <!-- Quiz Selection Screen -->
-        <div id="quiz-selection-screen">
-            <h2 style="color: #667eea; margin-bottom: 30px;">Choose Your Quiz</h2>
-            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-                <button id="use-example-btn" style="background: #2ecc71;">📚 Use Example Quiz</button>
-                <button id="create-custom-btn" style="background: #e74c3c;">✏️ Create Custom Quiz</button>
+        <div id="quiz-selection-screen" class="card">
+            <div class="card-title text-center">Choose Your Quiz</div>
+            <div class="btn-group">
+                <button id="use-example-btn" class="btn btn-success">📚 Example Quiz</button>
+                <button id="create-custom-btn" class="btn btn-primary">✏️ Create Custom</button>
             </div>
         </div>
 
         <!-- Custom Quiz Creation Screen -->
-        <div id="quiz-creation-screen" class="hidden">
-            <h2 style="color: #667eea; margin-bottom: 20px;">Create Your Quiz</h2>
-            <div id="questions-container" style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
+        <div id="quiz-creation-screen" class="card hidden">
+            <div class="card-title">Create Your Quiz</div>
+            <div id="questions-container" class="questions-scroll mb-2">
                 <!-- Questions will be added here -->
             </div>
-            <button id="add-question-btn" style="background: #2ecc71; margin: 10px;">➕ Add Question</button>
-            <div style="margin-top: 20px;">
-                <button id="create-quiz-btn" disabled>Create Quiz & Start Game</button>
-                <button id="cancel-quiz-btn" class="danger">Cancel</button>
+            <button id="add-question-btn" class="btn btn-success btn-full mb-2">➕ Add Question</button>
+            <div class="btn-group">
+                <button id="create-quiz-btn" class="btn btn-primary" disabled>Create & Start</button>
+                <button id="cancel-quiz-btn" class="btn btn-ghost">Cancel</button>
             </div>
         </div>
 
         <!-- Lobby Screen -->
-        <div id="lobby-screen" class="hidden">
+        <div id="lobby-screen" class="card hidden">
             <div class="pin-display">
-                <div class="pin-label">Game PIN:</div>
+                <div class="pin-label">Game PIN</div>
                 <div class="pin-number" id="game-pin">------</div>
             </div>
-            <div class="player-count" id="player-count">0 players joined</div>
-            <div class="players-list" id="players-list"></div>
+            <div class="player-count"><span id="player-count-num">0</span> players joined</div>
+            <div class="players-grid" id="players-list"></div>
 
-            <!-- Answer Time Configuration -->
-            <div style="background: #f7f7f7; padding: 20px; border-radius: 15px; margin: 20px 0;">
-                <label style="display: block; color: #666; margin-bottom: 10px; font-size: 1.1em;">
-                    Answer Time (seconds):
-                </label>
-                <input type="number" id="answer-time-input" value="20" min="5" max="120"
-                    style="width: 100%; padding: 10px; font-size: 1.1em; border: 2px solid #ddd; border-radius: 8px;">
-                <div style="color: #999; font-size: 0.9em; margin-top: 5px;">Players have this much time to answer each
-                    question</div>
+            <div class="form-group">
+                <label class="form-label">Answer Time (seconds)</label>
+                <input type="number" id="answer-time-input" class="form-input" value="20" min="5" max="120">
+                <div class="form-hint">Players have this much time to answer each question</div>
             </div>
 
-            <button id="start-game-btn" disabled>Start Game</button>
-            <button id="end-session-btn" class="danger">End Session</button>
+            <div class="btn-group">
+                <button id="start-game-btn" class="btn btn-primary" disabled>Start Game</button>
+                <button id="end-session-btn" class="btn btn-danger">End Session</button>
+            </div>
         </div>
 
         <!-- Question Screen -->
-        <div id="question-screen" class="hidden">
-            <div class="status-message" id="question-status">Question 1 of 5</div>
-            <div class="timer-text" id="timer-text">Time remaining: 20s</div>
-            <div class="timer-bar-container">
-                <div class="timer-bar" id="timer-bar" style="width: 100%;"></div>
+        <div id="question-screen" class="card hidden">
+            <div class="question-status" id="question-status">Question 1 of 5</div>
+            <div class="timer-container">
+                <div class="timer-text" id="timer-text">20</div>
+                <div class="timer-bar">
+                    <div class="timer-bar-fill" id="timer-bar" style="width: 100%;"></div>
+                </div>
             </div>
-            <div class="question-display">
-                <div class="question-text" id="question-text"></div>
-                <div class="answers-grid" id="answers-grid"></div>
+            <div class="question-text" id="question-text"></div>
+            <div class="answers-display" id="answers-grid"></div>
+            <div class="btn-group">
+                <button id="show-results-btn" class="btn btn-primary">Show Results</button>
+                <button id="end-session-question-btn" class="btn btn-danger">End Session</button>
             </div>
-            <button id="show-results-btn">Show Results</button>
-            <button id="end-session-question-btn" class="danger">End Session</button>
         </div>
 
         <!-- Results Screen -->
-        <div id="results-screen" class="hidden">
-            <div class="leaderboard">
-                <div class="leaderboard-title">🏆 Leaderboard</div>
-                <div id="leaderboard-list"></div>
+        <div id="results-screen" class="card hidden">
+            <div class="leaderboard-title">🏆 Leaderboard</div>
+            <div id="leaderboard-list"></div>
+            <div class="btn-group mt-3">
+                <button id="next-question-btn" class="btn btn-primary">Next Question</button>
+                <button id="end-session-results-btn" class="btn btn-danger">End Session</button>
             </div>
-            <button id="next-question-btn">Next Question</button>
-            <button id="end-session-results-btn" class="danger">End Session</button>
         </div>
 
         <!-- Final Results Screen -->
-        <div id="final-screen" class="hidden">
-            <h2 style="color: #667eea; margin-bottom: 30px;">🎉 Game Over!</h2>
-            <div class="leaderboard">
-                <div class="leaderboard-title">🏆 Final Standings</div>
-                <div id="final-leaderboard"></div>
-            </div>
-            <button id="new-game-btn">New Game</button>
+        <div id="final-screen" class="card hidden">
+            <div class="leaderboard-title">🎉 Game Over!</div>
+            <div id="final-leaderboard"></div>
+            <button id="new-game-btn" class="btn btn-primary btn-full mt-3">New Game</button>
         </div>
     </div>
 
@@ -440,7 +679,7 @@
     <script>
         // Ensure Socket.IO is loaded before initializing
         if (typeof io === 'undefined') {
-            document.body.innerHTML = '<div style="text-align: center; margin-top: 50px; font-family: Arial;"><h1>Error</h1><p>Failed to load Socket.IO library. Please refresh the page.</p></div>';
+            document.body.innerHTML = '<div style="text-align: center; margin-top: 50px; color: #fff;"><h1>Error</h1><p>Failed to load Socket.IO library. Please refresh the page.</p></div>';
             throw new Error('Socket.IO not loaded');
         }
 
@@ -448,7 +687,7 @@
 
         // Handle Socket.IO connection errors
         socket.on('connect_error', function (err) {
-            document.body.innerHTML = '<div style="text-align: center; margin-top: 50px; font-family: Arial;"><h1>Connection Error</h1><p>Failed to connect to the server. Please check your internet connection and try again.</p></div>';
+            document.body.innerHTML = '<div style="text-align: center; margin-top: 50px; color: #fff;"><h1>Connection Error</h1><p>Failed to connect to the server. Please check your internet connection and try again.</p></div>';
         });
 
         let currentPin = null;
@@ -482,7 +721,7 @@
 
         // Lobby elements
         const gamePinEl = document.getElementById('game-pin');
-        const playerCountEl = document.getElementById('player-count');
+        const playerCountEl = document.getElementById('player-count-num');
         const playersListEl = document.getElementById('players-list');
         const startGameBtn = document.getElementById('start-game-btn');
 
@@ -511,13 +750,11 @@
 
         // Quiz selection handlers
         useExampleBtn.addEventListener('click', () => {
-            // Create game with example quiz (no questions parameter)
             socket.emit('host-create-game');
         });
 
         createCustomBtn.addEventListener('click', () => {
             showScreen('quiz-creation');
-            // Add first question automatically
             if (customQuestions.length === 0) {
                 addQuestion();
             }
@@ -532,30 +769,30 @@
             questionForm.className = 'question-form';
             questionForm.dataset.questionId = questionId;
             questionForm.innerHTML = `
-                <button class="remove-question-btn" data-question-id="${questionId}">✕</button>
+                <button class="remove-btn" data-question-id="${questionId}">✕</button>
                 <h3>Question ${questionCounter}</h3>
                 <div class="form-group">
-                    <label>Question Text:</label>
-                    <textarea placeholder="Enter your question here..." required></textarea>
+                    <label class="form-label">Question Text</label>
+                    <textarea class="form-input" placeholder="Enter your question here..." required></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Answers (select the correct one):</label>
-                    <div class="answer-inputs">
-                        <div class="answer-input-wrapper">
+                    <label class="form-label">Answers (select the correct one)</label>
+                    <div class="answer-grid">
+                        <div class="answer-option red">
                             <input type="radio" name="${questionId}-correct" value="0" required>
-                            <input type="text" placeholder="Answer 1 (Red)" required style="border-left: 4px solid #e74c3c;">
+                            <input type="text" placeholder="Answer 1" required>
                         </div>
-                        <div class="answer-input-wrapper">
+                        <div class="answer-option blue">
                             <input type="radio" name="${questionId}-correct" value="1">
-                            <input type="text" placeholder="Answer 2 (Blue)" required style="border-left: 4px solid #3498db;">
+                            <input type="text" placeholder="Answer 2" required>
                         </div>
-                        <div class="answer-input-wrapper">
+                        <div class="answer-option yellow">
                             <input type="radio" name="${questionId}-correct" value="2">
-                            <input type="text" placeholder="Answer 3 (Yellow)" required style="border-left: 4px solid #f1c40f;">
+                            <input type="text" placeholder="Answer 3" required>
                         </div>
-                        <div class="answer-input-wrapper">
+                        <div class="answer-option green">
                             <input type="radio" name="${questionId}-correct" value="3">
-                            <input type="text" placeholder="Answer 4 (Green)" required style="border-left: 4px solid #2ecc71;">
+                            <input type="text" placeholder="Answer 4" required>
                         </div>
                     </div>
                 </div>
@@ -563,8 +800,7 @@
 
             questionsContainer.appendChild(questionForm);
 
-            // Add event listener for remove button
-            const removeBtn = questionForm.querySelector('.remove-question-btn');
+            const removeBtn = questionForm.querySelector('.remove-btn');
             removeBtn.addEventListener('click', () => {
                 questionForm.remove();
                 updateCreateQuizButton();
@@ -579,7 +815,6 @@
             forms.forEach((form, index) => {
                 form.querySelector('h3').textContent = `Question ${index + 1}`;
             });
-            // Update questionCounter to match current number of questions
             questionCounter = forms.length;
         }
 
@@ -606,7 +841,7 @@
             let isValid = true;
             questionForms.forEach((form, index) => {
                 const questionText = form.querySelector('textarea').value.trim();
-                const answerInputs = form.querySelectorAll('.answer-input-wrapper input[type="text"]');
+                const answerInputs = form.querySelectorAll('.answer-option input[type="text"]');
                 const correctRadio = form.querySelector('input[type="radio"]:checked');
 
                 if (!questionText) {
@@ -636,13 +871,9 @@
             });
 
             if (isValid && questions.length > 0) {
-                // Create game with custom questions
                 socket.emit('host-create-game', { questions: questions });
             }
         });
-
-        // Create game on load - REMOVED, now we show quiz selection instead
-        // socket.emit('host-create-game');
 
         // Game created
         socket.on('game-created', (data) => {
@@ -655,108 +886,87 @@
         // Player joined
         socket.on('player-joined', (data) => {
             updatePlayersList(data.players);
-            playerCountEl.textContent = `${data.playerCount} player${data.playerCount !== 1 ? 's' : ''} joined`;
-            startGameBtn.disabled = data.playerCount === 0;
+            startGameBtn.disabled = Object.keys(data.players).length === 0;
         });
 
         // Player left
         socket.on('player-left', (data) => {
             updatePlayersList(data.players);
-            playerCountEl.textContent = `${data.playerCount} player${data.playerCount !== 1 ? 's' : ''} joined`;
-            startGameBtn.disabled = data.playerCount === 0;
+            startGameBtn.disabled = Object.keys(data.players).length === 0;
         });
-
-        function updatePlayersList(players) {
-            playersListEl.innerHTML = '';
-            players.forEach(player => {
-                const playerItem = document.createElement('div');
-                playerItem.className = 'player-item';
-                playerItem.innerHTML = `
-                    <span class="player-name">${player.nickname}</span>
-                    <span class="player-score">${player.score} pts</span>
-                `;
-                playersListEl.appendChild(playerItem);
-            });
-        }
 
         // Start game
         startGameBtn.addEventListener('click', () => {
             const answerTimeInput = document.getElementById('answer-time-input');
             const answerTimeLimit = parseInt(answerTimeInput.value) || 20;
-
-            // Validate answer time
-            if (answerTimeLimit < 5 || answerTimeLimit > 120) {
-                alert('Answer time must be between 5 and 120 seconds');
-                return;
-            }
-
-            socket.emit('host-start-game', { pin: currentPin, answerTimeLimit });
+            hostAnswerTimeLimit = answerTimeLimit;
+            socket.emit('host-start-game', { pin: currentPin, answerTimeLimit: answerTimeLimit });
         });
 
-        // Display question
+        // Question display
         socket.on('question-display', (data) => {
-            showScreen('question');
             questionStatusEl.textContent = `Question ${data.questionNumber} of ${data.totalQuestions}`;
             questionTextEl.textContent = data.question;
+
             hostAnswerTimeLimit = data.answerTimeLimit || 20;
-
-            answersGridEl.innerHTML = '';
-            const colors = ['red', 'blue', 'yellow', 'green'];
-            data.answers.forEach((answer, index) => {
-                const answerBox = document.createElement('div');
-                answerBox.className = `answer-box ${colors[index]}`;
-                answerBox.textContent = answer;
-                answersGridEl.appendChild(answerBox);
-            });
-
-            // Start host timer
             startHostTimer(hostAnswerTimeLimit);
+
+            const colors = ['red', 'blue', 'yellow', 'green'];
+            answersGridEl.innerHTML = data.answers.map((answer, index) =>
+                `<div class="answer-box ${colors[index]}">${answer}</div>`
+            ).join('');
+
+            showScreen('question');
         });
 
-        function startHostTimer(timeLimit) {
-            // Clear any existing timer
-            if (hostTimerInterval) {
-                clearInterval(hostTimerInterval);
-            }
+        function startHostTimer(duration) {
+            if (hostTimerInterval) clearInterval(hostTimerInterval);
 
-            let timeRemaining = timeLimit;
-            timerTextEl.textContent = `Time remaining: ${timeRemaining}s`;
+            let timeLeft = duration;
+            timerTextEl.textContent = timeLeft;
+            timerTextEl.className = 'timer-text';
             timerBarEl.style.width = '100%';
 
             hostTimerInterval = setInterval(() => {
-                timeRemaining--;
-                if (timeRemaining > 0) {
-                    timerTextEl.textContent = `Time remaining: ${timeRemaining}s`;
-                    const percentage = (timeRemaining / timeLimit) * 100;
-                    timerBarEl.style.width = percentage + '%';
-                } else {
+                timeLeft--;
+                timerTextEl.textContent = timeLeft;
+
+                const percentage = (timeLeft / duration) * 100;
+                timerBarEl.style.width = percentage + '%';
+
+                if (timeLeft <= 5) {
+                    timerTextEl.className = 'timer-text danger';
+                } else if (timeLeft <= 10) {
+                    timerTextEl.className = 'timer-text warning';
+                }
+
+                if (timeLeft <= 0) {
                     clearInterval(hostTimerInterval);
-                    timerTextEl.textContent = `Time's up!`;
-                    timerBarEl.style.width = '0%';
+                    timerTextEl.textContent = '0';
                 }
             }, 1000);
         }
 
-        // Show results
+        // Show results button
         showResultsBtn.addEventListener('click', () => {
+            if (hostTimerInterval) clearInterval(hostTimerInterval);
             socket.emit('host-show-results', { pin: currentPin });
         });
 
-        // Display results
+        // Question results
         socket.on('question-results', (data) => {
-            // Clear host timer
-            if (hostTimerInterval) {
-                clearInterval(hostTimerInterval);
-            }
-
-            showScreen('results');
-
-            // Highlight correct answer in question screen
+            const colors = ['red', 'blue', 'yellow', 'green'];
             const answerBoxes = answersGridEl.querySelectorAll('.answer-box');
-            answerBoxes[data.correctAnswer].classList.add('correct');
+            answerBoxes.forEach((box, index) => {
+                if (index === data.correctAnswer) {
+                    box.classList.add('correct');
+                }
+            });
 
-            // Update leaderboard
-            updateLeaderboard(leaderboardListEl, data.leaderboard);
+            setTimeout(() => {
+                updateLeaderboard(data.leaderboard);
+                showScreen('results');
+            }, 1500);
         });
 
         // Next question
@@ -764,40 +974,64 @@
             socket.emit('host-next-question', { pin: currentPin });
         });
 
+        // Game ended
+        socket.on('game-ended', (data) => {
+            if (hostTimerInterval) clearInterval(hostTimerInterval);
+            updateFinalLeaderboard(data.leaderboard);
+            showScreen('final');
+        });
+
         // End session handlers
-        function handleEndSession() {
+        function endSession() {
             if (confirm(MESSAGES.endSessionConfirm)) {
+                if (hostTimerInterval) clearInterval(hostTimerInterval);
                 socket.emit('host-end-session', { pin: currentPin });
+                location.reload();
             }
         }
 
-        endSessionBtn.addEventListener('click', handleEndSession);
-        endSessionQuestionBtn.addEventListener('click', handleEndSession);
-        endSessionResultsBtn.addEventListener('click', handleEndSession);
+        endSessionBtn.addEventListener('click', endSession);
+        endSessionQuestionBtn.addEventListener('click', endSession);
+        endSessionResultsBtn.addEventListener('click', endSession);
 
-        // New game handler
+        // New game
         newGameBtn.addEventListener('click', () => {
             location.reload();
         });
 
-        // Game ended
-        socket.on('game-ended', (data) => {
-            showScreen('final');
-            updateLeaderboard(finalLeaderboardEl, data.leaderboard);
-        });
+        // Update players list
+        function updatePlayersList(players) {
+            const playerArray = Object.values(players);
+            playerCountEl.textContent = playerArray.length;
 
-        function updateLeaderboard(container, leaderboard) {
-            container.innerHTML = '';
-            leaderboard.forEach(player => {
-                const item = document.createElement('div');
-                item.className = 'leaderboard-item';
-                item.innerHTML = `
-                    <div class="leaderboard-rank">${player.rank}</div>
+            playersListEl.innerHTML = playerArray.map(player =>
+                `<div class="player-chip">
+                    <span>${player.nickname}</span>
+                    <span class="score">${player.score || 0}</span>
+                </div>`
+            ).join('');
+        }
+
+        // Update leaderboard
+        function updateLeaderboard(leaderboard) {
+            leaderboardListEl.innerHTML = leaderboard.map((player, index) =>
+                `<div class="leaderboard-item">
+                    <div class="leaderboard-rank">${index + 1}</div>
                     <div class="leaderboard-name">${player.nickname}</div>
                     <div class="leaderboard-score">${player.score}</div>
-                `;
-                container.appendChild(item);
-            });
+                </div>`
+            ).join('');
+        }
+
+        // Update final leaderboard
+        function updateFinalLeaderboard(leaderboard) {
+            finalLeaderboardEl.innerHTML = leaderboard.map((player, index) =>
+                `<div class="leaderboard-item">
+                    <div class="leaderboard-rank">${index + 1}</div>
+                    <div class="leaderboard-name">${player.nickname}</div>
+                    <div class="leaderboard-score">${player.score}</div>
+                </div>`
+            ).join('');
         }
 
         function showScreen(screen) {
