@@ -86,6 +86,9 @@ function calculateLeaderboard(game) {
 // Store question timers
 const questionTimers = {};
 
+// Store per-game countdown timeouts (to prevent duplicate countdown timers)
+const questionCountdownTimeouts = {};
+
 // Function to reveal correct answer (when all players answered or timer expires)
 function autoRevealAnswer(pin) {
   const game = games[pin];
@@ -306,13 +309,15 @@ io.on('connection', (socket) => {
       answers: question.answers,
       questionNumber: game.currentQuestionIndex + 1,
       totalQuestions: game.questions.length,
+      answerTimeLimit: game.answerTimeLimit,
       totalPlayers: Object.keys(game.players).length
     });
 
     // Send signal to players to show answer buttons
     io.to(pin).emit('show-question', {
       questionNumber: game.currentQuestionIndex + 1,
-      totalQuestions: game.questions.length
+      totalQuestions: game.questions.length,
+      answerTimeLimit: game.answerTimeLimit
     });
 
     // Start auto-results timer
@@ -483,6 +488,9 @@ io.on('connection', (socket) => {
     io.to(pin).emit('question-results', {
       correctAnswer: question.correctAnswer,
       correctAnswerText: question.answers[question.correctAnswer],
+      questionNumber: game.currentQuestionIndex + 1,
+      totalQuestions: game.questions.length,
+      isLastQuestion: (game.currentQuestionIndex === game.questions.length - 1),
       leaderboard: leaderboard,
       playerResults: playerResults
     });
@@ -504,13 +512,19 @@ io.on('connection', (socket) => {
       return;
     }
 
-    game.currentQuestionIndex++;
+    // Prevent duplicate countdown timers if host clicks multiple times
+    if (questionCountdownTimeouts[pin]) {
+      clearTimeout(questionCountdownTimeouts[pin]);
+      delete questionCountdownTimeouts[pin];
+    }
 
-    if (game.currentQuestionIndex >= game.questions.length) {
+    const nextIndex = game.currentQuestionIndex + 1;
+
+    if (nextIndex >= game.questions.length) {
       // Game ended
       game.state = GameState.ENDED;
 
-      // Clear timer
+      // Clear timers
       if (questionTimers[pin]) {
         clearTimeout(questionTimers[pin]);
         delete questionTimers[pin];
@@ -528,36 +542,71 @@ io.on('connection', (socket) => {
         console.log(`Game ${pin} cleaned up`);
       }, GAME_CLEANUP_DELAY);
       console.log(`Game ${pin} ended`);
-    } else {
-      // Show next question
-      game.state = GameState.QUESTION;
-      game.answers = {};
-      game.questionStartTime = Date.now();
+      return;
+    }
 
-      const question = game.questions[game.currentQuestionIndex];
+    // Broadcast synchronized 3-2-1 countdown to host + players
+    io.to(pin).emit('question-countdown', { seconds: 3 });
+
+    // After countdown completes, send the next question
+    questionCountdownTimeouts[pin] = setTimeout(() => {
+      delete questionCountdownTimeouts[pin];
+
+      const g = games[pin];
+      if (!g) return;
+
+      const idx = g.currentQuestionIndex + 1;
+      if (idx >= g.questions.length) {
+        // Game ended (safety)
+        g.state = GameState.ENDED;
+
+        if (questionTimers[pin]) {
+          clearTimeout(questionTimers[pin]);
+          delete questionTimers[pin];
+        }
+
+        const finalLeaderboard = calculateLeaderboard(g);
+        io.to(pin).emit('game-ended', { leaderboard: finalLeaderboard });
+
+        setTimeout(() => {
+          delete games[pin];
+          console.log(`Game ${pin} cleaned up`);
+        }, GAME_CLEANUP_DELAY);
+
+        console.log(`Game ${pin} ended`);
+        return;
+      }
+
+      // Show next question
+      g.state = GameState.QUESTION;
+      g.currentQuestionIndex = idx;
+      g.answers = {};
+      g.questionStartTime = Date.now();
+
+      const question = g.questions[g.currentQuestionIndex];
 
       // Send question to host
-      io.to(game.hostId).emit('question-display', {
+      io.to(g.hostId).emit('question-display', {
         question: question.question,
         answers: question.answers,
-        questionNumber: game.currentQuestionIndex + 1,
-        totalQuestions: game.questions.length,
-        answerTimeLimit: game.answerTimeLimit,
-        totalPlayers: Object.keys(game.players).length
+        questionNumber: g.currentQuestionIndex + 1,
+        totalQuestions: g.questions.length,
+        answerTimeLimit: g.answerTimeLimit,
+        totalPlayers: Object.keys(g.players).length
       });
 
       // Send signal to players
       io.to(pin).emit('show-question', {
-        questionNumber: game.currentQuestionIndex + 1,
-        totalQuestions: game.questions.length,
-        answerTimeLimit: game.answerTimeLimit
+        questionNumber: g.currentQuestionIndex + 1,
+        totalQuestions: g.questions.length,
+        answerTimeLimit: g.answerTimeLimit
       });
 
       // Start auto-results timer for next question
-      startQuestionTimer(pin, game.answerTimeLimit);
+      startQuestionTimer(pin, g.answerTimeLimit);
 
       console.log(`Next question shown in game ${pin}`);
-    }
+    }, 3000);
   });
 
   // Host ends session
@@ -579,6 +628,12 @@ io.on('connection', (socket) => {
     if (questionTimers[pin]) {
       clearTimeout(questionTimers[pin]);
       delete questionTimers[pin];
+    }
+
+    // Clear any pending question countdown
+    if (questionCountdownTimeouts[pin]) {
+      clearTimeout(questionCountdownTimeouts[pin]);
+      delete questionCountdownTimeouts[pin];
     }
 
     // Calculate final leaderboard before ending
@@ -612,6 +667,18 @@ io.on('connection', (socket) => {
       if (game.hostId === socket.id) {
         // Host disconnected, end game
         io.to(pin).emit('host-disconnected');
+
+        // Clear timers for this game (if any)
+        if (questionTimers[pin]) {
+          clearTimeout(questionTimers[pin]);
+          delete questionTimers[pin];
+        }
+
+        if (questionCountdownTimeouts[pin]) {
+          clearTimeout(questionCountdownTimeouts[pin]);
+          delete questionCountdownTimeouts[pin];
+        }
+
         delete games[pin];
         console.log(`Game ${pin} deleted (host disconnected)`);
       } else if (game.players[socket.id]) {
