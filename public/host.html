@@ -642,74 +642,67 @@
             }
         }
 
-        /* ============================
-            PROMPT 2 — Countdown Overlay
-           ============================ */
+        /* Countdown Overlay */
         .countdown-overlay {
             position: fixed;
-            inset: 0;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.95);
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(10, 10, 10, 0.88);
             z-index: 9999;
+            pointer-events: all;
         }
 
         .countdown-number {
-            font-size: 6rem;
+            font-size: 12rem;
             font-weight: 800;
-            letter-spacing: 0.05em;
-            color: #fff;
-            line-height: 1;
-            transform: scale(1);
-            opacity: 1;
-        }
-
-        .countdown-number.animate {
-            animation: countdownFadeIn 0.35s ease;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: countdownFadeIn 0.5s ease-out;
         }
 
         @keyframes countdownFadeIn {
-            from {
+            0% {
                 opacity: 0;
-                transform: scale(0.88);
+                transform: scale(0.5);
             }
-
-            to {
+            100% {
                 opacity: 1;
                 transform: scale(1);
             }
         }
 
-        /* Question screen quick fade-in */
-        .screen-fade-in {
-            animation: screenFadeIn 0.25s ease;
+        .question-screen-fade {
+            animation: fadeIn 0.3s ease-out;
         }
 
-        @keyframes screenFadeIn {
-            from {
+        @keyframes fadeIn {
+            0% {
                 opacity: 0;
-                transform: translateY(6px);
             }
-
-            to {
+            100% {
                 opacity: 1;
-                transform: translateY(0);
             }
         }
     </style>
 </head>
 
 <body>
+    <!-- Countdown Overlay -->
+    <div id="countdown-overlay" class="countdown-overlay hidden">
+        <div id="countdown-number" class="countdown-number">3</div>
+    </div>
+
     <div class="container">
         <div class="header">
             <a href="/" class="home-link">← Back to Menu</a>
             <h1>🎯 <span>Hohohoot</span> Host</h1>
-        </div>
-
-        <!-- PROMPT 2: Countdown Overlay -->
-        <div id="countdown-overlay" class="countdown-overlay hidden">
-            <div id="countdown-number" class="countdown-number">3</div>
         </div>
 
         <!-- Quiz Selection Screen -->
@@ -811,20 +804,10 @@
         let questionCounter = 0;
         let hostTimerInterval = null;
         let hostAnswerTimeLimit = 20;
-
-        // PROMPT 1 — Auto Show Results countdown state
         let autoShowResultsInterval = null;
-        let autoShowResultsRemaining = 0;
-        let defaultShowResultsLabel = 'Show Results';
-
-        // PROMPT 3 — Last question behavior state
-        let isLastQuestion = false;
-        let lastQuestionNumber = 0;
-        let lastTotalQuestions = 0;
-
-        // PROMPT 2 — Question countdown overlay state
-        let questionCountdownInterval = null;
-        let questionCountdownRemaining = 0;
+        let hasEmittedShowResults = false;
+        let currentQuestionNumber = 0;
+        let totalQuestions = 0;
 
         // Configuration
         const MESSAGES = {
@@ -878,14 +861,6 @@
 
         // Final elements
         const finalLeaderboardEl = document.getElementById('final-leaderboard');
-
-        // PROMPT 2 — Countdown overlay elements
-        const countdownOverlayEl = document.getElementById('countdown-overlay');
-        const countdownNumberEl = document.getElementById('countdown-number');
-
-        // PROMPT 3 — Next Question button defaults
-        const DEFAULT_NEXT_QUESTION_LABEL = 'Next Question';
-        const LAST_QUESTION_LABEL = 'Ana menüye dön';
 
         // Quiz selection handlers
         useExampleBtn.addEventListener('click', () => {
@@ -1014,109 +989,6 @@
             }
         });
 
-        // ============================
-        //  1 — Auto Show Results helpers
-        // ============================
-        function clearAutoShowResultsCountdown() {
-            if (autoShowResultsInterval) {
-                clearInterval(autoShowResultsInterval);
-                autoShowResultsInterval = null;
-            }
-            autoShowResultsRemaining = 0;
-            if (showResultsBtn) {
-                showResultsBtn.textContent = defaultShowResultsLabel;
-            }
-        }
-
-        function startAutoShowResultsCountdown() {
-            clearAutoShowResultsCountdown();
-
-            autoShowResultsRemaining = 3;
-            showResultsBtn.textContent = `${defaultShowResultsLabel} in ${autoShowResultsRemaining}`;
-
-            autoShowResultsInterval = setInterval(() => {
-                autoShowResultsRemaining--;
-
-                if (autoShowResultsRemaining > 0) {
-                    showResultsBtn.textContent = `${defaultShowResultsLabel} in ${autoShowResultsRemaining}`;
-                    return;
-                }
-
-                clearAutoShowResultsCountdown();
-                socket.emit('host-show-results', { pin: currentPin });
-            }, 1000);
-        }
-
-        // ============================
-        //  2 — Countdown overlay helpers
-        // ============================
-        function clearQuestionCountdownOverlay() {
-            if (questionCountdownInterval) {
-                clearInterval(questionCountdownInterval);
-                questionCountdownInterval = null;
-            }
-            questionCountdownRemaining = 0;
-            if (countdownOverlayEl) countdownOverlayEl.classList.add('hidden');
-        }
-
-        function animateCountdownNumber() {
-            if (!countdownNumberEl) return;
-            countdownNumberEl.classList.remove('animate');
-            void countdownNumberEl.offsetWidth; // force reflow
-            countdownNumberEl.classList.add('animate');
-        }
-
-        function showCountdown(seconds) {
-            const s = parseInt(seconds, 10);
-            const startSeconds = Number.isFinite(s) && s > 0 ? s : 3;
-
-            if (!countdownOverlayEl || !countdownNumberEl) return;
-
-            clearQuestionCountdownOverlay();
-
-            questionCountdownRemaining = startSeconds;
-            countdownOverlayEl.classList.remove('hidden');
-            countdownNumberEl.textContent = String(questionCountdownRemaining);
-            animateCountdownNumber();
-
-            questionCountdownInterval = setInterval(() => {
-                questionCountdownRemaining--;
-
-                if (questionCountdownRemaining <= 0) {
-                    clearQuestionCountdownOverlay();
-                    return;
-                }
-
-                countdownNumberEl.textContent = String(questionCountdownRemaining);
-                animateCountdownNumber();
-            }, 1000);
-        }
-
-        function applyScreenFadeIn(el) {
-            if (!el) return;
-            el.classList.remove('screen-fade-in');
-            void el.offsetWidth; // force reflow
-            el.classList.add('screen-fade-in');
-            setTimeout(() => el.classList.remove('screen-fade-in'), 350);
-        }
-
-        // ============================
-        //  3 — Next Question button helpers
-        // ============================
-        function setNextQuestionButtonToDefault() {
-            nextQuestionBtn.textContent = DEFAULT_NEXT_QUESTION_LABEL;
-            nextQuestionBtn.classList.remove('btn-success', 'btn-danger');
-            nextQuestionBtn.classList.add('btn-primary');
-            nextQuestionBtn.disabled = false;
-        }
-
-        function setNextQuestionButtonToReturnMenu() {
-            nextQuestionBtn.textContent = LAST_QUESTION_LABEL;
-            nextQuestionBtn.classList.remove('btn-primary', 'btn-danger');
-            nextQuestionBtn.classList.add('btn-success');
-            nextQuestionBtn.disabled = false;
-        }
-
         // Game created
         socket.on('game-created', (data) => {
             currentPin = data.pin;
@@ -1145,49 +1017,85 @@
             socket.emit('host-start-game', { pin: currentPin, answerTimeLimit: answerTimeLimit });
         });
 
-        //  2: Receive synchronized countdown event
-        socket.on('question-countdown', ({ seconds }) => {
-            showCountdown(seconds);
-        });
+        // Countdown overlay elements
+        const countdownOverlay = document.getElementById('countdown-overlay');
+        const countdownNumber = document.getElementById('countdown-number');
+        let isCountdownActive = false;
+
+        // Block inputs during countdown
+        function blockInputsDuringCountdown(e) {
+            if (isCountdownActive) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }
+
+        document.addEventListener('keydown', blockInputsDuringCountdown, true);
+
+        function showCountdownThenQuestion(callback) {
+            isCountdownActive = true;
+            let count = 3;
+            countdownNumber.textContent = count;
+            countdownNumber.style.animation = 'none';
+            countdownOverlay.classList.remove('hidden');
+            // Force reflow to restart animation
+            void countdownNumber.offsetWidth;
+            countdownNumber.style.animation = 'countdownFadeIn 0.5s ease-out';
+
+            const countdownInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownNumber.textContent = count;
+                    countdownNumber.style.animation = 'none';
+                    void countdownNumber.offsetWidth;
+                    countdownNumber.style.animation = 'countdownFadeIn 0.5s ease-out';
+                } else {
+                    clearInterval(countdownInterval);
+                    countdownOverlay.classList.add('hidden');
+                    isCountdownActive = false;
+                    callback();
+                }
+            }, 1000);
+        }
 
         // Question display
         socket.on('question-display', (data) => {
-            //  1: reset/clear countdown and button state BEFORE showing question
-            clearAutoShowResultsCountdown();
-            showResultsBtn.textContent = defaultShowResultsLabel;
-            showResultsBtn.disabled = false;
-
-            //  3: reset last-question state on new question
-            isLastQuestion = false;
-            setNextQuestionButtonToDefault();
-
-            //  2: ensure overlay is not stuck visible
-            clearQuestionCountdownOverlay();
-
-            // Track question meta for fallback last-question detection
-            lastQuestionNumber = data.questionNumber || 0;
-            lastTotalQuestions = data.totalQuestions || 0;
-
+            currentQuestionNumber = data.questionNumber;
+            totalQuestions = data.totalQuestions;
             questionStatusEl.textContent = `Question ${data.questionNumber} of ${data.totalQuestions}`;
             questionTextEl.textContent = data.question;
             answerCountEl.textContent = `0 / ${data.totalPlayers || 0} answered`;
 
             hostAnswerTimeLimit = data.answerTimeLimit || 20;
 
-            // Show timer again
-            const timerContainer = document.querySelector('.timer-container');
-            if (timerContainer) timerContainer.classList.remove('hidden');
-
-            startHostTimer(hostAnswerTimeLimit);
+            // Reset show results button and state
+            if (autoShowResultsInterval) {
+                clearInterval(autoShowResultsInterval);
+                autoShowResultsInterval = null;
+            }
+            showResultsBtn.textContent = 'Show Results';
+            hasEmittedShowResults = false;
 
             const colors = ['red', 'blue', 'yellow', 'green'];
             answersGridEl.innerHTML = data.answers.map((answer, index) =>
                 `<div class="answer-box ${colors[index]}">${answer}</div>`
             ).join('');
 
-            showScreen('question');
-            //  2: fade-in question screen
-            applyScreenFadeIn(questionScreen);
+            // Show countdown first, then question
+            showCountdownThenQuestion(() => {
+                // Show timer again
+                const timerContainer = document.querySelector('.timer-container');
+                if (timerContainer) timerContainer.classList.remove('hidden');
+
+                // Start timer AFTER countdown
+                startHostTimer(hostAnswerTimeLimit);
+
+                // Add fade-in effect
+                questionScreen.classList.add('question-screen-fade');
+                showScreen('question');
+                setTimeout(() => questionScreen.classList.remove('question-screen-fade'), 300);
+            });
         });
 
         // Answer count update
@@ -1225,11 +1133,17 @@
 
         // Show results button
         showResultsBtn.addEventListener('click', () => {
-            //  1: manual click cancels auto countdown
-            clearAutoShowResultsCountdown();
-
+            // Cancel auto countdown if running
+            if (autoShowResultsInterval) {
+                clearInterval(autoShowResultsInterval);
+                autoShowResultsInterval = null;
+            }
             if (hostTimerInterval) clearInterval(hostTimerInterval);
-            socket.emit('host-show-results', { pin: currentPin });
+            // Guard against double emit
+            if (!hasEmittedShowResults) {
+                hasEmittedShowResults = true;
+                socket.emit('host-show-results', { pin: currentPin });
+            }
         });
 
         // Answer revealed (when timer expires or all players answered)
@@ -1247,8 +1161,23 @@
                 }
             });
 
-            //  1: start auto "Show Results in 3-2-1"
-            startAutoShowResultsCountdown();
+            // Start auto show results countdown (3-2-1)
+            let countdown = 3;
+            showResultsBtn.textContent = `Show Results in ${countdown}`;
+            autoShowResultsInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    showResultsBtn.textContent = `Show Results in ${countdown}`;
+                } else {
+                    clearInterval(autoShowResultsInterval);
+                    autoShowResultsInterval = null;
+                    // Auto emit if not already emitted
+                    if (!hasEmittedShowResults) {
+                        hasEmittedShowResults = true;
+                        socket.emit('host-show-results', { pin: currentPin });
+                    }
+                }
+            }, 1000);
         });
 
         // Question results (when host clicks Show Results)
@@ -1260,70 +1189,43 @@
                 }
             });
 
-            //  3: detect last question & update Next Question button BEFORE switching screens
-            const hasIsLast = typeof data.isLastQuestion === 'boolean';
-            const qn = (typeof data.questionNumber === 'number' ? data.questionNumber : lastQuestionNumber);
-            const tq = (typeof data.totalQuestions === 'number' ? data.totalQuestions : lastTotalQuestions);
-
-            if (hasIsLast) {
-                isLastQuestion = !!data.isLastQuestion;
-            } else if (qn && tq) {
-                isLastQuestion = (qn === tq);
-            } else {
-                isLastQuestion = false;
-            }
-
-            if (isLastQuestion) {
-                setNextQuestionButtonToReturnMenu();
-            } else {
-                setNextQuestionButtonToDefault();
-            }
-
             setTimeout(() => {
                 updateLeaderboard(data.leaderboard);
+                // Check if this is the last question
+                if (currentQuestionNumber >= totalQuestions) {
+                    nextQuestionBtn.textContent = 'Ana Menüye Dön';
+                    nextQuestionBtn.classList.remove('btn-primary');
+                    nextQuestionBtn.classList.add('btn-success');
+                } else {
+                    nextQuestionBtn.textContent = 'Next Question';
+                    nextQuestionBtn.classList.remove('btn-success');
+                    nextQuestionBtn.classList.add('btn-primary');
+                }
                 showScreen('results');
-                applyScreenFadeIn(resultsScreen);
             }, 1500);
         });
 
-        // Next question / Return to menu
+        // Next question
         nextQuestionBtn.addEventListener('click', () => {
-            if (isLastQuestion) {
-                nextQuestionBtn.disabled = true;
-
-                clearAutoShowResultsCountdown();
-                clearQuestionCountdownOverlay();
-                if (hostTimerInterval) clearInterval(hostTimerInterval);
-
+            // If last question, go to main menu
+            if (currentQuestionNumber >= totalQuestions) {
                 socket.emit('host-end-session', { pin: currentPin });
-
-                // Short delay, then back to menu
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 400);
+                window.location.href = '/';
                 return;
             }
-
             socket.emit('host-next-question', { pin: currentPin });
         });
 
         // Game ended
         socket.on('game-ended', (data) => {
-            clearAutoShowResultsCountdown();
-            clearQuestionCountdownOverlay();
-
             if (hostTimerInterval) clearInterval(hostTimerInterval);
             updateFinalLeaderboard(data.leaderboard);
             showScreen('final');
-            applyScreenFadeIn(finalScreen);
         });
 
         // End session handlers
         function endSession() {
             if (confirm(MESSAGES.endSessionConfirm)) {
-                clearAutoShowResultsCountdown();
-                clearQuestionCountdownOverlay();
-
                 if (hostTimerInterval) clearInterval(hostTimerInterval);
                 socket.emit('host-end-session', { pin: currentPin });
                 location.reload();

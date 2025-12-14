@@ -517,74 +517,67 @@
             }
         }
 
-        /* ============================
-           PROMPT 2 — Countdown Overlay
-           ============================ */
+        /* Countdown Overlay */
         .countdown-overlay {
             position: fixed;
-            inset: 0;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.95);
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(10, 10, 10, 0.88);
             z-index: 9999;
+            pointer-events: all;
         }
 
         .countdown-number {
-            font-size: 6rem;
+            font-size: 12rem;
             font-weight: 800;
-            letter-spacing: 0.05em;
-            color: #fff;
-            line-height: 1;
-            transform: scale(1);
-            opacity: 1;
-        }
-
-        .countdown-number.animate {
-            animation: countdownFadeIn 0.35s ease;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: countdownFadeIn 0.5s ease-out;
         }
 
         @keyframes countdownFadeIn {
-            from {
+            0% {
                 opacity: 0;
-                transform: scale(0.88);
+                transform: scale(0.5);
             }
-
-            to {
+            100% {
                 opacity: 1;
                 transform: scale(1);
             }
         }
 
-        /* Question screen quick fade-in */
-        .screen-fade-in {
-            animation: screenFadeIn 0.25s ease;
+        .question-screen-fade {
+            animation: fadeIn 0.3s ease-out;
         }
 
-        @keyframes screenFadeIn {
-            from {
+        @keyframes fadeIn {
+            0% {
                 opacity: 0;
-                transform: translateY(6px);
             }
-
-            to {
+            100% {
                 opacity: 1;
-                transform: translateY(0);
             }
         }
     </style>
 </head>
 
 <body>
+    <!-- Countdown Overlay -->
+    <div id="countdown-overlay" class="countdown-overlay hidden">
+        <div id="countdown-number" class="countdown-number">3</div>
+    </div>
+
     <div class="container">
         <div class="header">
             <a href="/" class="home-link">← Back to Menu</a>
             <h1>🎯 <span>Hohohoot</span></h1>
-        </div>
-
-        <!-- PROMPT 2: Countdown Overlay -->
-        <div id="countdown-overlay" class="countdown-overlay hidden">
-            <div id="countdown-number" class="countdown-number">3</div>
         </div>
 
         <!-- Join Screen -->
@@ -684,10 +677,6 @@
         let playerAnswerTimeLimit = 20;
         let hasAnswered = false;
 
-        // PROMPT 2 — Question countdown overlay state
-        let questionCountdownInterval = null;
-        let questionCountdownRemaining = 0;
-
         // Elements
         const joinScreen = document.getElementById('join-screen');
         const waitingScreen = document.getElementById('waiting-screen');
@@ -716,10 +705,6 @@
 
         const finalLeaderboard = document.getElementById('final-leaderboard');
         const playAgainBtn = document.getElementById('play-again-btn');
-
-        // PROMPT 2 — Countdown overlay elements
-        const countdownOverlayEl = document.getElementById('countdown-overlay');
-        const countdownNumberEl = document.getElementById('countdown-number');
 
         // Input validation
         function validateInputs() {
@@ -758,68 +743,53 @@
             showScreen('waiting');
         });
 
+        // Countdown overlay elements
+        const countdownOverlay = document.getElementById('countdown-overlay');
+        const countdownNumberEl = document.getElementById('countdown-number');
+        let isCountdownActive = false;
+
+        // Block inputs during countdown
+        function blockInputsDuringCountdown(e) {
+            if (isCountdownActive) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }
+
+        document.addEventListener('keydown', blockInputsDuringCountdown, true);
+        document.addEventListener('click', blockInputsDuringCountdown, true);
+
+        function showCountdownThenQuestion(callback) {
+            isCountdownActive = true;
+            let count = 3;
+            countdownNumberEl.textContent = count;
+            countdownNumberEl.style.animation = 'none';
+            countdownOverlay.classList.remove('hidden');
+            // Force reflow to restart animation
+            void countdownNumberEl.offsetWidth;
+            countdownNumberEl.style.animation = 'countdownFadeIn 0.5s ease-out';
+
+            const countdownInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownNumberEl.textContent = count;
+                    countdownNumberEl.style.animation = 'none';
+                    void countdownNumberEl.offsetWidth;
+                    countdownNumberEl.style.animation = 'countdownFadeIn 0.5s ease-out';
+                } else {
+                    clearInterval(countdownInterval);
+                    countdownOverlay.classList.add('hidden');
+                    isCountdownActive = false;
+                    callback();
+                }
+            }, 1000);
+        }
+
         // Error handling
         socket.on('error', (data) => {
             errorMessage.textContent = data.message;
             errorMessage.classList.remove('hidden');
-        });
-
-        // ============================
-        // PROMPT 2 — Countdown overlay helpers
-        // ============================
-        function clearQuestionCountdownOverlay() {
-            if (questionCountdownInterval) {
-                clearInterval(questionCountdownInterval);
-                questionCountdownInterval = null;
-            }
-            questionCountdownRemaining = 0;
-            if (countdownOverlayEl) countdownOverlayEl.classList.add('hidden');
-        }
-
-        function animateCountdownNumber() {
-            if (!countdownNumberEl) return;
-            countdownNumberEl.classList.remove('animate');
-            void countdownNumberEl.offsetWidth; // force reflow
-            countdownNumberEl.classList.add('animate');
-        }
-
-        function showCountdown(seconds) {
-            const s = parseInt(seconds, 10);
-            const startSeconds = Number.isFinite(s) && s > 0 ? s : 3;
-
-            if (!countdownOverlayEl || !countdownNumberEl) return;
-
-            clearQuestionCountdownOverlay();
-
-            questionCountdownRemaining = startSeconds;
-            countdownOverlayEl.classList.remove('hidden');
-            countdownNumberEl.textContent = String(questionCountdownRemaining);
-            animateCountdownNumber();
-
-            questionCountdownInterval = setInterval(() => {
-                questionCountdownRemaining--;
-
-                if (questionCountdownRemaining <= 0) {
-                    clearQuestionCountdownOverlay();
-                    return;
-                }
-
-                countdownNumberEl.textContent = String(questionCountdownRemaining);
-                animateCountdownNumber();
-            }, 1000);
-        }
-
-        function applyScreenFadeIn(el) {
-            if (!el) return;
-            el.classList.remove('screen-fade-in');
-            void el.offsetWidth; // force reflow
-            el.classList.add('screen-fade-in');
-            setTimeout(() => el.classList.remove('screen-fade-in'), 350);
-        }
-
-        // PROMPT 2: Receive synchronized countdown event
-        socket.on('question-countdown', ({ seconds }) => {
-            showCountdown(seconds);
         });
 
         // Show question
@@ -828,19 +798,26 @@
             questionInfo.textContent = `Question ${data.questionNumber} of ${data.totalQuestions}`;
 
             playerAnswerTimeLimit = data.answerTimeLimit || 20;
-            startPlayerTimer(playerAnswerTimeLimit);
 
-            // PROMPT 2: ensure overlay is not stuck visible
-            clearQuestionCountdownOverlay();
-
+            // Disable buttons during countdown
             answerBtns.forEach(btn => {
-                btn.disabled = false;
+                btn.disabled = true;
                 btn.classList.remove('selected');
             });
 
-            showScreen('question');
-            // PROMPT 2: fade-in question screen
-            applyScreenFadeIn(questionScreen);
+            // Show countdown first, then question
+            showCountdownThenQuestion(() => {
+                // Enable buttons and start timer AFTER countdown
+                answerBtns.forEach(btn => {
+                    btn.disabled = false;
+                });
+                startPlayerTimer(playerAnswerTimeLimit);
+
+                // Add fade-in effect
+                questionScreen.classList.add('question-screen-fade');
+                showScreen('question');
+                setTimeout(() => questionScreen.classList.remove('question-screen-fade'), 300);
+            });
         });
 
         function startPlayerTimer(duration) {
