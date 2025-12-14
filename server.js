@@ -17,37 +17,117 @@ app.use(express.static(path.join(__dirname, 'public')));
 const QUESTIONS = [
   {
     id: 1,
-    question: "What is the capital of France?",
-    answers: ["London", "Berlin", "Paris", "Madrid"],
-    correctAnswer: 2, // Index of correct answer (Paris)
+    question: "İnternet protokol yığınında, datagramları kaynak–hedef arasında yönlendirme (routing) görevi hangi katmandadır?",
+    answers: ["Application", "Transport", "Network", "Physical"],
+    correctAnswer: 2, // Index of correct answer (Network)
     colors: ["red", "blue", "yellow", "green"]
   },
   {
     id: 2,
-    question: "Which planet is known as the Red Planet?",
-    answers: ["Venus", "Mars", "Jupiter", "Saturn"],
-    correctAnswer: 1, // Index of correct answer (Mars)
+    question: "Circuit switching (devre anahtarlama) için hangisi doğrudur?",
+    answers: [
+      "Kaynaklar uçtan uca “çağrı” için ayrılır/rezerve edilir, paylaşım yoktur",
+      "Her paket bağımsız iletilir, kaynak rezervasyonu yapılmaz",
+      "Trafik artınca paketler kuyruklanır ve tampon dolarsa düşer",
+      "Paketlerin tamamı router’a gelmeden sonraki linke iletilebilir"
+    ],
+    correctAnswer: 0, // Index of correct answer
     colors: ["red", "blue", "yellow", "green"]
   },
   {
     id: 3,
-    question: "What is 2 + 2?",
-    answers: ["3", "4", "5", "6"],
-    correctAnswer: 1, // Index of correct answer (4)
+    question: "Bir linke gelen varış hızı, bir süre iletim hızını aşarsa router’da ne olabilir?",
+    answers: [
+      "Paketler kuyruklanır; tampon dolarsa paket kaybı (drop) olabilir",
+      "Gecikme sıfıra yaklaşır",
+      "Paketler otomatik olarak sıkıştırılır, kayıp olmaz",
+      "Router her zaman daha hızlı iletime geçer"
+    ],
+    correctAnswer: 0, // Index of correct answer
     colors: ["red", "blue", "yellow", "green"]
   },
   {
     id: 4,
-    question: "Who painted the Mona Lisa?",
-    answers: ["Van Gogh", "Picasso", "Da Vinci", "Rembrandt"],
-    correctAnswer: 2, // Index of correct answer (Da Vinci)
+    question: "Client-server paradigması için en uygun ifade hangisidir?",
+    answers: [
+      "İstemciler (clients) genelde doğrudan birbirleriyle haberleşir",
+      "Sunucu (server) her zaman açık olabilir; istemciler sunucuya bağlanıp iletişim kurar",
+      "Sunucunun kalıcı IP’si olmak zorunda değildir",
+      "Bu mimaride “server” diye bir kavram yoktur"
+    ],
+    correctAnswer: 1, // Index of correct answer
     colors: ["red", "blue", "yellow", "green"]
   },
   {
     id: 5,
-    question: "What is the largest ocean on Earth?",
-    answers: ["Atlantic", "Indian", "Arctic", "Pacific"],
-    correctAnswer: 3, // Index of correct answer (Pacific)
+    question: "Bir host üzerindeki bir process’i adreslemek için aşağıdakilerden hangisi gerekir?",
+    answers: [
+      "Sadece IP adresi",
+      "Sadece port numarası",
+      "IP adresi + port numarası",
+      "Sadece MAC adresi"
+    ],
+    correctAnswer: 2, // Index of correct answer
+    colors: ["red", "blue", "yellow", "green"]
+  },
+  {
+    id: 6,
+    question: "HTTP’nin “stateless” olması ne demektir?",
+    answers: [
+      "Sunucu, önceki istemci istekleri hakkında bilgi tutmaz",
+      "HTTP, UDP kullanır ve bağlantı kurmaz",
+      "HTTP mesajları şifreli gönderilir",
+      "HTTP sadece tek bir nesne (object) indirebilir"
+    ],
+    correctAnswer: 0, // Index of correct answer
+    colors: ["red", "blue", "yellow", "green"]
+  },
+  {
+    id: 7,
+    question: "Non-persistent HTTP ile Persistent HTTP arasındaki temel fark hangisidir?",
+    answers: [
+      "Non-persistent: tek TCP bağlantısı ile birden fazla nesne taşır",
+      "Persistent: her nesne için yeni TCP bağlantısı açar",
+      "Non-persistent: en fazla bir nesne/response için TCP bağlantısı açılır ve kapanır",
+      "Persistent: TCP kullanmaz, sadece UDP kullanır"
+    ],
+    correctAnswer: 2, // Index of correct answer
+    colors: ["red", "blue", "yellow", "green"]
+  },
+  {
+    id: 8,
+    question: "UDP ile ilgili doğru ifade hangisidir?",
+    answers: [
+      "Bağlantı yönelimlidir; el sıkışma (handshaking) zorunludur",
+      "“Best effort”tır; segmentler kaybolabilir veya sırasız gelebilir; bağlantısızdır",
+      "Her zaman güvenilir ve sıralı teslimat sağlar",
+      "Akış kontrolü ve tıkanıklık kontrolü zorunlu olarak vardır"
+    ],
+    correctAnswer: 1, // Index of correct answer
+    colors: ["red", "blue", "yellow", "green"]
+  },
+  {
+    id: 9,
+    question: "TCP için doğru ifade hangisidir?",
+    answers: [
+      "Mesaj sınırlarını koruyan “message-oriented” bir protokoldür",
+      "Bağlantısızdır ve el sıkışma yapmaz",
+      "Bağlantı yönelimlidir; güvenilir ve sıralı “byte stream” sağlar",
+      "Yalnızca DNS gibi uygulamalar için tasarlanmıştır"
+    ],
+    correctAnswer: 2, // Index of correct answer
+    colors: ["red", "blue", "yellow", "green"]
+  },
+  {
+    id: 10,
+    question: "SDN (Software-Defined Networking) kontrol düzlemi yaklaşımını en iyi hangisi açıklar?",
+    answers: [
+      "Her router kendi routing hesabını tamamen bağımsız yapar, merkezi yapı yoktur",
+      "Uzak bir controller, forwarding tablolarını hesaplar ve router/switch’lere kurar (logically centralized)",
+      "Sadece application layer’da çalışan bir protokoldür",
+      "IP yönlendirmesi yerine fiziksel katman üzerinden yönlendirme yapar"
+    ],
+    correctAnswer: 1, // Index of correct answer
     colors: ["red", "blue", "yellow", "green"]
   }
 ];
