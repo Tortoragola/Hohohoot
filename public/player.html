@@ -516,6 +516,62 @@
                 font-size: 3rem;
             }
         }
+
+        /* ============================
+           PROMPT 2 — Countdown Overlay
+           ============================ */
+        .countdown-overlay {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 10, 10, 0.88);
+            z-index: 9999;
+        }
+
+        .countdown-number {
+            font-size: 6rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            color: #fff;
+            line-height: 1;
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .countdown-number.animate {
+            animation: countdownFadeIn 0.35s ease;
+        }
+
+        @keyframes countdownFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.88);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Question screen quick fade-in */
+        .screen-fade-in {
+            animation: screenFadeIn 0.25s ease;
+        }
+
+        @keyframes screenFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
@@ -524,6 +580,11 @@
         <div class="header">
             <a href="/" class="home-link">← Back to Menu</a>
             <h1>🎯 <span>Hohohoot</span></h1>
+        </div>
+
+        <!-- PROMPT 2: Countdown Overlay -->
+        <div id="countdown-overlay" class="countdown-overlay hidden">
+            <div id="countdown-number" class="countdown-number">3</div>
         </div>
 
         <!-- Join Screen -->
@@ -623,6 +684,10 @@
         let playerAnswerTimeLimit = 20;
         let hasAnswered = false;
 
+        // PROMPT 2 — Question countdown overlay state
+        let questionCountdownInterval = null;
+        let questionCountdownRemaining = 0;
+
         // Elements
         const joinScreen = document.getElementById('join-screen');
         const waitingScreen = document.getElementById('waiting-screen');
@@ -651,6 +716,10 @@
 
         const finalLeaderboard = document.getElementById('final-leaderboard');
         const playAgainBtn = document.getElementById('play-again-btn');
+
+        // PROMPT 2 — Countdown overlay elements
+        const countdownOverlayEl = document.getElementById('countdown-overlay');
+        const countdownNumberEl = document.getElementById('countdown-number');
 
         // Input validation
         function validateInputs() {
@@ -695,6 +764,64 @@
             errorMessage.classList.remove('hidden');
         });
 
+        // ============================
+        // PROMPT 2 — Countdown overlay helpers
+        // ============================
+        function clearQuestionCountdownOverlay() {
+            if (questionCountdownInterval) {
+                clearInterval(questionCountdownInterval);
+                questionCountdownInterval = null;
+            }
+            questionCountdownRemaining = 0;
+            if (countdownOverlayEl) countdownOverlayEl.classList.add('hidden');
+        }
+
+        function animateCountdownNumber() {
+            if (!countdownNumberEl) return;
+            countdownNumberEl.classList.remove('animate');
+            void countdownNumberEl.offsetWidth; // force reflow
+            countdownNumberEl.classList.add('animate');
+        }
+
+        function showCountdown(seconds) {
+            const s = parseInt(seconds, 10);
+            const startSeconds = Number.isFinite(s) && s > 0 ? s : 3;
+
+            if (!countdownOverlayEl || !countdownNumberEl) return;
+
+            clearQuestionCountdownOverlay();
+
+            questionCountdownRemaining = startSeconds;
+            countdownOverlayEl.classList.remove('hidden');
+            countdownNumberEl.textContent = String(questionCountdownRemaining);
+            animateCountdownNumber();
+
+            questionCountdownInterval = setInterval(() => {
+                questionCountdownRemaining--;
+
+                if (questionCountdownRemaining <= 0) {
+                    clearQuestionCountdownOverlay();
+                    return;
+                }
+
+                countdownNumberEl.textContent = String(questionCountdownRemaining);
+                animateCountdownNumber();
+            }, 1000);
+        }
+
+        function applyScreenFadeIn(el) {
+            if (!el) return;
+            el.classList.remove('screen-fade-in');
+            void el.offsetWidth; // force reflow
+            el.classList.add('screen-fade-in');
+            setTimeout(() => el.classList.remove('screen-fade-in'), 350);
+        }
+
+        // PROMPT 2: Receive synchronized countdown event
+        socket.on('question-countdown', ({ seconds }) => {
+            showCountdown(seconds);
+        });
+
         // Show question
         socket.on('show-question', (data) => {
             hasAnswered = false;
@@ -703,12 +830,17 @@
             playerAnswerTimeLimit = data.answerTimeLimit || 20;
             startPlayerTimer(playerAnswerTimeLimit);
 
+            // PROMPT 2: ensure overlay is not stuck visible
+            clearQuestionCountdownOverlay();
+
             answerBtns.forEach(btn => {
                 btn.disabled = false;
                 btn.classList.remove('selected');
             });
 
             showScreen('question');
+            // PROMPT 2: fade-in question screen
+            applyScreenFadeIn(questionScreen);
         });
 
         function startPlayerTimer(duration) {
