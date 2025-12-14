@@ -545,6 +545,8 @@ io.on('connection', (socket) => {
       return;
     }
 
+    // Update the current question index before starting the countdown to avoid race conditions
+    game.currentQuestionIndex = nextIndex;
     // Broadcast synchronized 3-2-1 countdown to host + players
     io.to(pin).emit('question-countdown', { seconds: 3 });
 
