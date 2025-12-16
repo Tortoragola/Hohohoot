@@ -9,6 +9,7 @@ const io = socketIO(server);
 
 const PORT = process.env.PORT || 3000;
 const GAME_CLEANUP_DELAY = 60000; // 1 minute in milliseconds
+const COUNTDOWN_DURATION = 3; // 3-second countdown before question starts on client
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
@@ -17,40 +18,121 @@ app.use(express.static(path.join(__dirname, 'public')));
 const QUESTIONS = [
   {
     id: 1,
-    question: "What is the capital of France?",
-    answers: ["London", "Berlin", "Paris", "Madrid"],
-    correctAnswer: 2, // Index of correct answer (Paris)
+    question: "İnternet protokol yığınında, datagramları kaynak–hedef arasında yönlendirme (routing) görevi hangi katmandadır?",
+    answers: ["Application", "Transport", "Network", "Physical"],
+    correctAnswer: 2, // Index of correct answer (Network)
     colors: ["red", "blue", "yellow", "green"]
   },
   {
     id: 2,
-    question: "Which planet is known as the Red Planet?",
-    answers: ["Venus", "Mars", "Jupiter", "Saturn"],
-    correctAnswer: 1, // Index of correct answer (Mars)
+    question: "Circuit switching (devre anahtarlama) için hangisi doğrudur?",
+    answers: [
+      "Kaynaklar uçtan uca “çağrı” için ayrılır/rezerve edilir, paylaşım yoktur",
+      "Her paket bağımsız iletilir, kaynak rezervasyonu yapılmaz",
+      "Trafik artınca paketler kuyruklanır ve tampon dolarsa düşer",
+      "Paketlerin tamamı router’a gelmeden sonraki linke iletilebilir"
+    ],
+    correctAnswer: 0, // Index of correct answer
     colors: ["red", "blue", "yellow", "green"]
   },
   {
     id: 3,
-    question: "What is 2 + 2?",
-    answers: ["3", "4", "5", "6"],
-    correctAnswer: 1, // Index of correct answer (4)
+    question: "Bir linke gelen varış hızı, bir süre iletim hızını aşarsa router’da ne olabilir?",
+    answers: [
+      "Paketler kuyruklanır; tampon dolarsa paket kaybı (drop) olabilir",
+      "Gecikme sıfıra yaklaşır",
+      "Paketler otomatik olarak sıkıştırılır, kayıp olmaz",
+      "Router her zaman daha hızlı iletime geçer"
+    ],
+    correctAnswer: 0, // Index of correct answer
     colors: ["red", "blue", "yellow", "green"]
   },
   {
     id: 4,
-    question: "Who painted the Mona Lisa?",
-    answers: ["Van Gogh", "Picasso", "Da Vinci", "Rembrandt"],
-    correctAnswer: 2, // Index of correct answer (Da Vinci)
+    question: "Client-server paradigması için en uygun ifade hangisidir?",
+    answers: [
+      "İstemciler (clients) genelde doğrudan birbirleriyle haberleşir",
+      "Sunucu (server) her zaman açık olabilir; istemciler sunucuya bağlanıp iletişim kurar",
+      "Sunucunun kalıcı IP’si olmak zorunda değildir",
+      "Bu mimaride “server” diye bir kavram yoktur"
+    ],
+    correctAnswer: 1, // Index of correct answer
     colors: ["red", "blue", "yellow", "green"]
   },
   {
     id: 5,
-    question: "What is the largest ocean on Earth?",
-    answers: ["Atlantic", "Indian", "Arctic", "Pacific"],
-    correctAnswer: 3, // Index of correct answer (Pacific)
+    question: "Bir host üzerindeki bir process’i adreslemek için aşağıdakilerden hangisi gerekir?",
+    answers: [
+      "Sadece IP adresi",
+      "Sadece port numarası",
+      "IP adresi + port numarası",
+      "Sadece MAC adresi"
+    ],
+    correctAnswer: 2, // Index of correct answer
+    colors: ["red", "blue", "yellow", "green"]
+  },
+  {
+    id: 6,
+    question: "HTTP’nin “stateless” olması ne demektir?",
+    answers: [
+      "Sunucu, önceki istemci istekleri hakkında bilgi tutmaz",
+      "HTTP, UDP kullanır ve bağlantı kurmaz",
+      "HTTP mesajları şifreli gönderilir",
+      "HTTP sadece tek bir nesne (object) indirebilir"
+    ],
+    correctAnswer: 0, // Index of correct answer
+    colors: ["red", "blue", "yellow", "green"]
+  },
+  {
+    id: 7,
+    question: "Non-persistent HTTP ile Persistent HTTP arasındaki temel fark hangisidir?",
+    answers: [
+      "Non-persistent: tek TCP bağlantısı ile birden fazla nesne taşır",
+      "Persistent: her nesne için yeni TCP bağlantısı açar",
+      "Non-persistent: en fazla bir nesne/response için TCP bağlantısı açılır ve kapanır",
+      "Persistent: TCP kullanmaz, sadece UDP kullanır"
+    ],
+    correctAnswer: 2, // Index of correct answer
+    colors: ["red", "blue", "yellow", "green"]
+  },
+  {
+    id: 8,
+    question: "UDP ile ilgili doğru ifade hangisidir?",
+    answers: [
+      "Bağlantı yönelimlidir; el sıkışma (handshaking) zorunludur",
+      "“Best effort”tır; segmentler kaybolabilir veya sırasız gelebilir; bağlantısızdır",
+      "Her zaman güvenilir ve sıralı teslimat sağlar",
+      "Akış kontrolü ve tıkanıklık kontrolü zorunlu olarak vardır"
+    ],
+    correctAnswer: 1, // Index of correct answer
+    colors: ["red", "blue", "yellow", "green"]
+  },
+  {
+    id: 9,
+    question: "TCP için doğru ifade hangisidir?",
+    answers: [
+      "Mesaj sınırlarını koruyan “message-oriented” bir protokoldür",
+      "Bağlantısızdır ve el sıkışma yapmaz",
+      "Bağlantı yönelimlidir; güvenilir ve sıralı “byte stream” sağlar",
+      "Yalnızca DNS gibi uygulamalar için tasarlanmıştır"
+    ],
+    correctAnswer: 2, // Index of correct answer
+    colors: ["red", "blue", "yellow", "green"]
+  },
+  {
+    id: 10,
+    question: "SDN (Software-Defined Networking) kontrol düzlemi yaklaşımını en iyi hangisi açıklar?",
+    answers: [
+      "Her router kendi routing hesabını tamamen bağımsız yapar, merkezi yapı yoktur",
+      "Uzak bir controller, forwarding tablolarını hesaplar ve router/switch’lere kurar (logically centralized)",
+      "Sadece application layer’da çalışan bir protokoldür",
+      "IP yönlendirmesi yerine fiziksel katman üzerinden yönlendirme yapar"
+    ],
+    correctAnswer: 1, // Index of correct answer
     colors: ["red", "blue", "yellow", "green"]
   }
 ];
+
 
 // Game state management
 const games = {}; // Store active games by PIN
@@ -296,7 +378,8 @@ io.on('connection', (socket) => {
     game.currentQuestionIndex = 0;
     game.answers = {};
     game.answerTimeLimit = timeLimit;
-    game.questionStartTime = Date.now();
+    // Set questionStartTime 3 seconds in future to account for client countdown
+    game.questionStartTime = Date.now() + (COUNTDOWN_DURATION * 1000);
 
     const question = game.questions[game.currentQuestionIndex];
 
@@ -315,8 +398,8 @@ io.on('connection', (socket) => {
       totalQuestions: game.questions.length
     });
 
-    // Start auto-results timer
-    startQuestionTimer(pin, timeLimit);
+    // Start auto-results timer (add countdown duration to account for client countdown)
+    startQuestionTimer(pin, timeLimit + COUNTDOWN_DURATION);
 
     console.log(`Game ${pin} started with ${timeLimit}s answer time`);
   });
@@ -447,14 +530,6 @@ io.on('connection', (socket) => {
     const question = game.questions[game.currentQuestionIndex];
 
     // Calculate results
-    const results = Object.entries(game.answers).map(([playerId, answer]) => {
-      const player = game.players[playerId];
-      return player ? {
-        nickname: player.nickname,
-        isCorrect: answer.isCorrect,
-        score: player.score
-      } : null;
-    }).filter(result => result !== null);
 
     // Sort by score for leaderboard
     const leaderboard = calculateLeaderboard(game);
@@ -532,7 +607,8 @@ io.on('connection', (socket) => {
       // Show next question
       game.state = GameState.QUESTION;
       game.answers = {};
-      game.questionStartTime = Date.now();
+      // Set questionStartTime 3 seconds in future to account for client countdown
+      game.questionStartTime = Date.now() + (COUNTDOWN_DURATION * 1000);
 
       const question = game.questions[game.currentQuestionIndex];
 
@@ -553,8 +629,8 @@ io.on('connection', (socket) => {
         answerTimeLimit: game.answerTimeLimit
       });
 
-      // Start auto-results timer for next question
-      startQuestionTimer(pin, game.answerTimeLimit);
+      // Start auto-results timer for next question (add countdown duration)
+      startQuestionTimer(pin, game.answerTimeLimit + COUNTDOWN_DURATION);
 
       console.log(`Next question shown in game ${pin}`);
     }

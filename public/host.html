@@ -417,7 +417,6 @@
 
         .answer-box.yellow {
             background: #eab308;
-            color: #18181b;
         }
 
         .answer-box.green {
@@ -642,10 +641,64 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Countdown Overlay */
+        .countdown-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            pointer-events: all;
+        }
+
+        .countdown-number {
+            font-size: 12rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: countdownFadeIn 0.5s ease-out;
+        }
+
+        @keyframes countdownFadeIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .question-screen-fade {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <!-- Countdown Overlay -->
+    <div id="countdown-overlay" class="countdown-overlay hidden">
+        <div id="countdown-number" class="countdown-number">3</div>
+    </div>
+
     <div class="container">
         <div class="header">
             <a href="/" class="home-link">← Back to Menu</a>
@@ -656,7 +709,7 @@
         <div id="quiz-selection-screen" class="card">
             <div class="card-title text-center">Choose Your Quiz</div>
             <div class="btn-group">
-                <button id="use-example-btn" class="btn btn-success">📚 Example Quiz</button>
+                <button id="use-example-btn" class="btn btn-success">📚 BİL499 Quiz</button>
                 <button id="create-custom-btn" class="btn btn-primary">✏️ Create Custom</button>
             </div>
         </div>
@@ -751,6 +804,10 @@
         let questionCounter = 0;
         let hostTimerInterval = null;
         let hostAnswerTimeLimit = 20;
+        let autoShowResultsInterval = null;
+        let hasEmittedShowResults = false;
+        let currentQuestionNumber = 0;
+        let totalQuestions = 0;
 
         // Configuration
         const MESSAGES = {
@@ -960,26 +1017,85 @@
             socket.emit('host-start-game', { pin: currentPin, answerTimeLimit: answerTimeLimit });
         });
 
+        // Countdown overlay elements
+        const countdownOverlay = document.getElementById('countdown-overlay');
+        const countdownNumber = document.getElementById('countdown-number');
+        let isCountdownActive = false;
+
+        // Block inputs during countdown
+        function blockInputsDuringCountdown(e) {
+            if (isCountdownActive) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }
+
+        document.addEventListener('keydown', blockInputsDuringCountdown, true);
+
+        function showCountdownThenQuestion(callback) {
+            isCountdownActive = true;
+            let count = 3;
+            countdownNumber.textContent = count;
+            countdownNumber.style.animation = 'none';
+            countdownOverlay.classList.remove('hidden');
+            // Force reflow to restart animation
+            void countdownNumber.offsetWidth;
+            countdownNumber.style.animation = 'countdownFadeIn 0.5s ease-out';
+
+            const countdownInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownNumber.textContent = count;
+                    countdownNumber.style.animation = 'none';
+                    void countdownNumber.offsetWidth;
+                    countdownNumber.style.animation = 'countdownFadeIn 0.5s ease-out';
+                } else {
+                    clearInterval(countdownInterval);
+                    countdownOverlay.classList.add('hidden');
+                    isCountdownActive = false;
+                    callback();
+                }
+            }, 1000);
+        }
+
         // Question display
         socket.on('question-display', (data) => {
+            currentQuestionNumber = data.questionNumber;
+            totalQuestions = data.totalQuestions;
             questionStatusEl.textContent = `Question ${data.questionNumber} of ${data.totalQuestions}`;
             questionTextEl.textContent = data.question;
             answerCountEl.textContent = `0 / ${data.totalPlayers || 0} answered`;
 
             hostAnswerTimeLimit = data.answerTimeLimit || 20;
 
-            // Show timer again
-            const timerContainer = document.querySelector('.timer-container');
-            if (timerContainer) timerContainer.classList.remove('hidden');
-
-            startHostTimer(hostAnswerTimeLimit);
+            // Reset show results button and state
+            if (autoShowResultsInterval) {
+                clearInterval(autoShowResultsInterval);
+                autoShowResultsInterval = null;
+            }
+            showResultsBtn.textContent = 'Show Results';
+            hasEmittedShowResults = false;
 
             const colors = ['red', 'blue', 'yellow', 'green'];
             answersGridEl.innerHTML = data.answers.map((answer, index) =>
                 `<div class="answer-box ${colors[index]}">${answer}</div>`
             ).join('');
 
-            showScreen('question');
+            // Show countdown first, then question
+            showCountdownThenQuestion(() => {
+                // Show timer again
+                const timerContainer = document.querySelector('.timer-container');
+                if (timerContainer) timerContainer.classList.remove('hidden');
+
+                // Start timer AFTER countdown
+                startHostTimer(hostAnswerTimeLimit);
+
+                // Add fade-in effect
+                questionScreen.classList.add('question-screen-fade');
+                showScreen('question');
+                setTimeout(() => questionScreen.classList.remove('question-screen-fade'), 300);
+            });
         });
 
         // Answer count update
@@ -1017,8 +1133,17 @@
 
         // Show results button
         showResultsBtn.addEventListener('click', () => {
+            // Cancel auto countdown if running
+            if (autoShowResultsInterval) {
+                clearInterval(autoShowResultsInterval);
+                autoShowResultsInterval = null;
+            }
             if (hostTimerInterval) clearInterval(hostTimerInterval);
-            socket.emit('host-show-results', { pin: currentPin });
+            // Guard against double emit
+            if (!hasEmittedShowResults) {
+                hasEmittedShowResults = true;
+                socket.emit('host-show-results', { pin: currentPin });
+            }
         });
 
         // Answer revealed (when timer expires or all players answered)
@@ -1035,6 +1160,24 @@
                     box.classList.add('correct');
                 }
             });
+
+            // Start auto show results countdown (3-2-1)
+            let countdown = 3;
+            showResultsBtn.textContent = `Show Results in ${countdown}`;
+            autoShowResultsInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    showResultsBtn.textContent = `Show Results in ${countdown}`;
+                } else {
+                    clearInterval(autoShowResultsInterval);
+                    autoShowResultsInterval = null;
+                    // Auto emit if not already emitted
+                    if (!hasEmittedShowResults) {
+                        hasEmittedShowResults = true;
+                        socket.emit('host-show-results', { pin: currentPin });
+                    }
+                }
+            }, 1000);
         });
 
         // Question results (when host clicks Show Results)
@@ -1048,12 +1191,28 @@
 
             setTimeout(() => {
                 updateLeaderboard(data.leaderboard);
+                // Check if this is the last question
+                if (currentQuestionNumber >= totalQuestions) {
+                    nextQuestionBtn.textContent = 'Ana Menüye Dön';
+                    nextQuestionBtn.classList.remove('btn-primary');
+                    nextQuestionBtn.classList.add('btn-success');
+                } else {
+                    nextQuestionBtn.textContent = 'Next Question';
+                    nextQuestionBtn.classList.remove('btn-success');
+                    nextQuestionBtn.classList.add('btn-primary');
+                }
                 showScreen('results');
             }, 1500);
         });
 
         // Next question
         nextQuestionBtn.addEventListener('click', () => {
+            // If last question, go to main menu
+            if (currentQuestionNumber >= totalQuestions) {
+                socket.emit('host-end-session', { pin: currentPin });
+                window.location.href = '/';
+                return;
+            }
             socket.emit('host-next-question', { pin: currentPin });
         });
 
