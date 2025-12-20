@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Hohohoot</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 420px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .home-link {
+            display: inline-block;
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            transition: color 0.2s;
+        }
+
+        .home-link:hover {
+            color: #a855f7;
+        }
+
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        h1 span {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+
+        .card {
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            background: #27272a;
+            padding: 0.25rem;
+            border-radius: 12px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .tab.active {
+            background: #6366f1;
+            color: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #a1a1aa;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            font-size: 1rem;
+            font-family: inherit;
+            background: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 10px;
+            color: #fff;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #52525b;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid #3f3f46;
+            color: #a1a1aa;
+        }
+
+        .btn-ghost:hover:not(:disabled) {
+            background: #27272a;
+            border-color: #52525b;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+            color: #52525b;
+            font-size: 0.875rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #3f3f46;
+        }
+
+        .divider::before {
+            margin-right: 1rem;
+        }
+
+        .divider::after {
+            margin-left: 1rem;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            padding: 0.875rem 1rem;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .success-message {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+            padding: 0.875rem 1rem;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .password-hint {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/" class="home-link">← Back to Menu</a>
+            <div class="logo">🎯</div>
+            <h1><span>Hohohoot</span></h1>
+            <p class="subtitle">Sign in to save and manage your quizzes</p>
+        </div>
+
+        <div class="card">
+            <div id="error-message" class="error-message hidden"></div>
+            <div id="success-message" class="success-message hidden"></div>
+
+            <div class="tabs">
+                <button class="tab active" data-tab="login">Login</button>
+                <button class="tab" data-tab="signup">Sign Up</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="login-email" class="form-input" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary" id="login-btn">
+                    Login
+                </button>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signup-form" class="hidden">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="signup-email" class="form-input" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="signup-password" class="form-input" placeholder="••••••••" required>
+                    <div class="password-hint">Minimum 6 characters</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" id="signup-confirm" class="form-input" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary" id="signup-btn">
+                    Sign Up
+                </button>
+            </form>
+
+            <div class="divider">or</div>
+
+            <button class="btn btn-ghost" id="guest-btn">
+                Continue as Guest
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/supabase-client.js"></script>
+    <script>
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const tabs = document.querySelectorAll('.tab');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        const guestBtn = document.getElementById('guest-btn');
+
+        // Tab switching
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+                
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Show/hide forms
+                if (targetTab === 'login') {
+                    loginForm.classList.remove('hidden');
+                    signupForm.classList.add('hidden');
+                } else {
+                    loginForm.classList.add('hidden');
+                    signupForm.classList.remove('hidden');
+                }
+                
+                // Clear messages
+                hideMessages();
+            });
+        });
+
+        // Login form
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessages();
+            
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const loginBtn = document.getElementById('login-btn');
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+            
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) throw error;
+                
+                if (data.user) {
+                    showSuccess('Login successful! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = '/host.html';
+                    }, 1000);
+                }
+            } catch (error) {
+                showError(error.message);
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }
+        });
+
+        // Signup form
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessages();
+            
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('signup-confirm').value;
+            const signupBtn = document.getElementById('signup-btn');
+            
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+            
+            // Validate password length
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters');
+                return;
+            }
+            
+            signupBtn.disabled = true;
+            signupBtn.textContent = 'Creating account...';
+            
+            try {
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) throw error;
+                
+                if (data.user) {
+                    showSuccess('Account created! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = '/host.html';
+                    }, 1000);
+                }
+            } catch (error) {
+                showError(error.message);
+                signupBtn.disabled = false;
+                signupBtn.textContent = 'Sign Up';
+            }
+        });
+
+        // Guest button
+        guestBtn.addEventListener('click', () => {
+            window.location.href = '/host.html';
+        });
+
+        // Helper functions
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.classList.remove('hidden');
+        }
+
+        function hideMessages() {
+            errorMessage.classList.add('hidden');
+            successMessage.classList.add('hidden');
+        }
+
+        // Check if already logged in
+        (async () => {
+            const user = await getCurrentUser();
+            if (user) {
+                showSuccess('Already logged in. Redirecting...');
+                setTimeout(() => {
+                    window.location.href = '/host.html';
+                }, 1000);
+            }
+        })();
+    </script>
+</body>
+
+</html>

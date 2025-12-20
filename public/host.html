@@ -64,6 +64,78 @@
             background-clip: text;
         }
 
+        /* User Info */
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #27272a;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .user-email {
+            color: #a855f7;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid #3f3f46;
+            color: #a1a1aa;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .logout-btn:hover {
+            background: #3f3f46;
+            color: #fff;
+        }
+
+        .login-prompt {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .login-prompt-text {
+            color: #a1a1aa;
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .login-prompt-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-family: inherit;
+        }
+
+        .login-prompt-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
         /* Cards */
         .card {
             background: #18181b;
@@ -262,6 +334,36 @@
             font-size: 0.75rem;
             color: #52525b;
             margin-top: 0.5rem;
+        }
+
+        /* Radio Group */
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .radio-option input[type="radio"] {
+            accent-color: #6366f1;
+            cursor: pointer;
+        }
+
+        .radio-option label {
+            cursor: pointer;
+            color: #a1a1aa;
+            font-size: 0.875rem;
+        }
+
+        .radio-option input[type="radio"]:checked + label {
+            color: #fff;
+            font-weight: 500;
         }
 
         /* Question Form */
@@ -571,6 +673,77 @@
             text-align: center;
         }
 
+        /* Quiz List */
+        .quizzes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .quiz-section-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #a1a1aa;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .quiz-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .quiz-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .quiz-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            background: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quiz-item:hover {
+            background: #3f3f46;
+            border-color: #6366f1;
+            transform: translateY(-2px);
+        }
+
+        .quiz-item-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .quiz-item-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 0.25rem;
+        }
+
+        .quiz-item-meta {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .quiz-item-arrow {
+            font-size: 1.25rem;
+            color: #6b7280;
+            margin-left: 1rem;
+        }
+
+        .quiz-item:hover .quiz-item-arrow {
+            color: #a855f7;
+        }
+
         .mb-1 {
             margin-bottom: 0.5rem;
         }
@@ -672,6 +845,7 @@
                 opacity: 0;
                 transform: scale(0.5);
             }
+
             100% {
                 opacity: 1;
                 transform: scale(1);
@@ -686,6 +860,7 @@
             0% {
                 opacity: 0;
             }
+
             100% {
                 opacity: 1;
             }
@@ -705,18 +880,72 @@
             <h1>🎯 <span>Hohohoot</span> Host</h1>
         </div>
 
+        <!-- User Info (shown when logged in) -->
+        <div id="user-info" class="user-info hidden">
+            <span>👤 <span class="user-email" id="user-email"></span></span>
+            <button class="logout-btn" id="logout-btn">Logout</button>
+        </div>
+
+        <!-- Login Prompt (shown for guests) -->
+        <div id="login-prompt" class="login-prompt hidden">
+            <div class="login-prompt-text">🔐 Login to save and manage your quizzes</div>
+            <a href="/auth.html" class="login-prompt-btn">Login / Sign Up</a>
+        </div>
+
         <!-- Quiz Selection Screen -->
         <div id="quiz-selection-screen" class="card">
             <div class="card-title text-center">Choose Your Quiz</div>
-            <div class="btn-group">
-                <button id="use-example-btn" class="btn btn-success">📚 BİL499 Quiz</button>
-                <button id="create-custom-btn" class="btn btn-primary">✏️ Create Custom</button>
+            
+            <!-- My Quizzes Section (shown only when logged in) -->
+            <div id="my-quizzes-section" class="quiz-section hidden">
+                <div class="quiz-section-title">👤 My Quizzes</div>
+                <div id="my-quizzes-loading" class="text-center" style="color: #6b7280; padding: 0.5rem;">
+                    Loading your quizzes...
+                </div>
+                <div id="my-quizzes-list" class="quizzes-list hidden"></div>
+                <div id="no-my-quizzes" class="text-center hidden" style="color: #6b7280; padding: 0.5rem; font-size: 0.875rem;">
+                    You haven't created any quizzes yet
+                </div>
+            </div>
+            
+            <!-- Public Quizzes Section -->
+            <div id="public-quizzes-section" class="quiz-section">
+                <div class="quiz-section-title">📚 Public Quizzes</div>
+                <div id="quizzes-loading" class="text-center" style="color: #6b7280; padding: 0.5rem;">
+                    Loading quizzes...
+                </div>
+                <div id="quizzes-list" class="quizzes-list hidden"></div>
+                <div id="no-quizzes" class="text-center hidden" style="color: #6b7280; padding: 0.5rem; font-size: 0.875rem;">
+                    No public quizzes found
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid #27272a; margin: 1.5rem 0; padding-top: 1.5rem;">
+                <div class="form-label mb-1">Or create a new quiz</div>
+                <button id="create-custom-btn" class="btn btn-primary btn-full">✏️ Create Custom Quiz</button>
             </div>
         </div>
 
         <!-- Custom Quiz Creation Screen -->
         <div id="quiz-creation-screen" class="card hidden">
             <div class="card-title">Create Your Quiz</div>
+            
+            <!-- Quiz Visibility Option -->
+            <div class="form-group" id="quiz-visibility-group">
+                <label class="form-label">Quiz Visibility</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" name="quiz-visibility" id="visibility-public" value="public" checked>
+                        <label for="visibility-public">📚 Public (Everyone can use)</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" name="quiz-visibility" id="visibility-private" value="private">
+                        <label for="visibility-private">🔒 Private (Only for me)</label>
+                    </div>
+                </div>
+                <div class="form-hint" id="visibility-hint">Public quizzes are shared with everyone. Private quizzes are only visible to you.</div>
+            </div>
+
             <div id="questions-container" class="questions-scroll mb-2">
                 <!-- Questions will be added here -->
             </div>
@@ -785,6 +1014,8 @@
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/supabase-client.js"></script>
     <script>
         // Ensure Socket.IO is loaded before initializing
         if (typeof io === 'undefined') {
@@ -808,6 +1039,8 @@
         let hasEmittedShowResults = false;
         let currentQuestionNumber = 0;
         let totalQuestions = 0;
+        let selectedQuizId = null;
+        let currentUser = null; // Auth state
 
         // Configuration
         const MESSAGES = {
@@ -822,8 +1055,20 @@
         const resultsScreen = document.getElementById('results-screen');
         const finalScreen = document.getElementById('final-screen');
 
+        // Auth elements
+        const userInfo = document.getElementById('user-info');
+        const userEmail = document.getElementById('user-email');
+        const logoutBtn = document.getElementById('logout-btn');
+        const loginPrompt = document.getElementById('login-prompt');
+
         // Quiz selection elements
-        const useExampleBtn = document.getElementById('use-example-btn');
+        const quizzesLoading = document.getElementById('quizzes-loading');
+        const quizzesList = document.getElementById('quizzes-list');
+        const noQuizzes = document.getElementById('no-quizzes');
+        const myQuizzesSection = document.getElementById('my-quizzes-section');
+        const myQuizzesLoading = document.getElementById('my-quizzes-loading');
+        const myQuizzesList = document.getElementById('my-quizzes-list');
+        const noMyQuizzes = document.getElementById('no-my-quizzes');
         const createCustomBtn = document.getElementById('create-custom-btn');
 
         // Quiz creation elements
@@ -862,15 +1107,166 @@
         // Final elements
         const finalLeaderboardEl = document.getElementById('final-leaderboard');
 
-        // Quiz selection handlers
-        useExampleBtn.addEventListener('click', () => {
-            socket.emit('host-create-game');
+        // ============ AUTH & INITIALIZATION ============
+        
+        // Initialize page - check auth and load quizzes
+        async function initializePage() {
+            // Check auth status
+            currentUser = await getCurrentUser();
+            
+            if (currentUser) {
+                // Logged in mode
+                userEmail.textContent = currentUser.email;
+                userInfo.classList.remove('hidden');
+                loginPrompt.classList.add('hidden');
+                myQuizzesSection.classList.remove('hidden');
+                
+                // Load user's quizzes
+                await loadMyQuizzes();
+            } else {
+                // Guest mode
+                userInfo.classList.add('hidden');
+                loginPrompt.classList.remove('hidden');
+                myQuizzesSection.classList.add('hidden');
+            }
+            
+            // Load public quizzes (for everyone)
+            await loadPublicQuizzes();
+        }
+        
+        // Logout handler
+        logoutBtn.addEventListener('click', async () => {
+            if (confirm('Are you sure you want to logout?')) {
+                const success = await signOut();
+                if (success) {
+                    window.location.reload();
+                }
+            }
         });
 
+        // ============ QUIZ LOADING ============
+        
+        // Load user's own quizzes
+        async function loadMyQuizzes() {
+            if (!currentUser) return;
+            
+            try {
+                const { data, error } = await supabaseClient
+                    .from('quizzes')
+                    .select('id, title, description, created_at')
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                myQuizzesLoading.classList.add('hidden');
+                
+                if (data.length === 0) {
+                    noMyQuizzes.classList.remove('hidden');
+                    return;
+                }
+                
+                myQuizzesList.innerHTML = data.map(quiz => `
+                    <div class="quiz-item" data-quiz-id="${quiz.id}" data-is-mine="true">
+                        <div class="quiz-item-content">
+                            <div class="quiz-item-title">${escapeHtml(quiz.title)}</div>
+                            <div class="quiz-item-meta">
+                                ${quiz.description ? escapeHtml(quiz.description) : 'No description'} • 
+                                Created ${new Date(quiz.created_at).toLocaleDateString()}
+                            </div>
+                        </div>
+                        <div class="quiz-item-arrow">→</div>
+                    </div>
+                `).join('');
+                
+                myQuizzesList.classList.remove('hidden');
+                
+                // Add click handlers
+                myQuizzesList.querySelectorAll('.quiz-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        selectedQuizId = item.dataset.quizId;
+                        socket.emit('host-create-game', { quizId: selectedQuizId });
+                    });
+                });
+                
+            } catch (error) {
+                console.error('Error loading my quizzes:', error);
+                myQuizzesLoading.textContent = 'Failed to load your quizzes';
+                myQuizzesLoading.style.color = '#ef4444';
+            }
+        }
+        
+        // Load public quizzes (user_id is NULL - shared with everyone)
+        async function loadPublicQuizzes() {
+            try {
+                // Public quizzes are those without an owner (user_id = NULL)
+                const { data, error } = await supabaseClient
+                    .from('quizzes')
+                    .select('id, title, description, created_at')
+                    .is('user_id', null)
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                quizzesLoading.classList.add('hidden');
+                
+                if (data.length === 0) {
+                    noQuizzes.classList.remove('hidden');
+                    return;
+                }
+                
+                quizzesList.innerHTML = data.map(quiz => `
+                    <div class="quiz-item" data-quiz-id="${quiz.id}">
+                        <div class="quiz-item-content">
+                            <div class="quiz-item-title">${escapeHtml(quiz.title)}</div>
+                            <div class="quiz-item-meta">
+                                ${quiz.description ? escapeHtml(quiz.description) : 'No description'}
+                            </div>
+                        </div>
+                        <div class="quiz-item-arrow">→</div>
+                    </div>
+                `).join('');
+                
+                quizzesList.classList.remove('hidden');
+                
+                // Add click handlers
+                quizzesList.querySelectorAll('.quiz-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        selectedQuizId = item.dataset.quizId;
+                        socket.emit('host-create-game', { quizId: selectedQuizId });
+                    });
+                });
+                
+            } catch (error) {
+                console.error('Error loading public quizzes:', error);
+                quizzesLoading.textContent = 'Failed to load quizzes';
+                quizzesLoading.style.color = '#ef4444';
+            }
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Initialize page on load
+        initializePage();
         createCustomBtn.addEventListener('click', () => {
             showScreen('quiz-creation');
             if (customQuestions.length === 0) {
                 addQuestion();
+            }
+            
+            // Show/hide visibility option based on auth
+            const visibilityGroup = document.getElementById('quiz-visibility-group');
+            const visibilityHint = document.getElementById('visibility-hint');
+            
+            if (currentUser) {
+                visibilityGroup.style.display = 'block';
+                visibilityHint.textContent = 'Public quizzes are shared with everyone. Private quizzes are only visible to you.';
+            } else {
+                visibilityGroup.style.display = 'none';
             }
         });
 
@@ -948,7 +1344,7 @@
             }
         });
 
-        createQuizBtn.addEventListener('click', () => {
+        createQuizBtn.addEventListener('click', async () => {
             const questions = [];
             const questionForms = questionsContainer.querySelectorAll('.question-form');
 
@@ -984,7 +1380,51 @@
                 });
             });
 
-            if (isValid && questions.length > 0) {
+            if (!isValid || questions.length === 0) return;
+
+            // Get visibility selection
+            const visibilityRadio = document.querySelector('input[name="quiz-visibility"]:checked');
+            const isPublic = visibilityRadio ? visibilityRadio.value === 'public' : false;
+
+            // Check if user is logged in
+            if (currentUser) {
+                // Logged in - save to database first
+                const quizTitle = prompt('Enter a title for your quiz:');
+                if (!quizTitle || quizTitle.trim() === '') {
+                    alert('Quiz title is required');
+                    return;
+                }
+                
+                const quizDescription = prompt('Enter a description (optional):') || '';
+                
+                createQuizBtn.disabled = true;
+                createQuizBtn.textContent = 'Saving quiz...';
+                
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('quizzes')
+                        .insert({
+                            user_id: isPublic ? null : currentUser.id,  // Public = NULL, Private = user_id
+                            title: quizTitle.trim(),
+                            description: quizDescription.trim(),
+                            questions: questions
+                        })
+                        .select()
+                        .single();
+                    
+                    if (error) throw error;
+                    
+                    // Start game with saved quiz
+                    socket.emit('host-create-game', { quizId: data.id });
+                    
+                } catch (error) {
+                    console.error('Error saving quiz:', error);
+                    alert('Failed to save quiz: ' + error.message);
+                    createQuizBtn.disabled = false;
+                    createQuizBtn.textContent = 'Create & Start';
+                }
+            } else {
+                // Guest - just create game without saving
                 socket.emit('host-create-game', { questions: questions });
             }
         });

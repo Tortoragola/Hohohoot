@@ -1,11 +1,18 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
+
+// Supabase client
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const PORT = process.env.PORT || 3000;
 const GAME_CLEANUP_DELAY = 60000; // 1 minute in milliseconds
@@ -13,9 +20,51 @@ const COUNTDOWN_DURATION = 3; // 3-second countdown before question starts on cl
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json()); // JSON body parser for API routes
 
-// Hardcoded questions
-const QUESTIONS = [
+// ============ API ROUTES ============
+
+// Get all quizzes (public - for quiz selection)
+app.get('/api/quizzes', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('quizzes')
+      .select('id, title, description, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching quizzes:', error);
+    res.status(500).json({ error: 'Failed to fetch quizzes' });
+  }
+});
+
+// Get single quiz with questions
+app.get('/api/quizzes/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from('quizzes')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    if (!data) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching quiz:', error);
+    res.status(500).json({ error: 'Failed to fetch quiz' });
+  }
+});
+
+// ============ FALLBACK QUESTIONS ============
+
+// Fallback hardcoded questions (used if no quiz selected or DB fails)
+const FALLBACK_QUESTIONS = [
   {
     id: 1,
     question: "İnternet protokol yığınında, datagramları kaynak–hedef arasında yönlendirme (routing) görevi hangi katmandadır?",
@@ -233,13 +282,38 @@ io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
 
   // Host creates a new game
-  socket.on('host-create-game', ({ questions = null } = {}) => {
+  socket.on('host-create-game', async ({ questions = null, quizId = null } = {}) => {
     const pin = generatePIN();
 
     // Validate questions if provided
-    let gameQuestions = QUESTIONS; // Default to hardcoded questions
+    let gameQuestions = FALLBACK_QUESTIONS; // Default to fallback questions
 
-    if (questions && Array.isArray(questions)) {
+    // If quizId is provided, fetch from Supabase
+    if (quizId) {
+      try {
+        const { data, error } = await supabase
+          .from('quizzes')
+          .select('questions')
+          .eq('id', quizId)
+          .single();
+
+        if (error) throw error;
+        if (data && data.questions) {
+          // Convert from DB format to game format
+          gameQuestions = data.questions.map((q, index) => ({
+            id: index + 1,
+            question: q.question,
+            answers: q.answers,
+            correctAnswer: q.correctAnswer,
+            colors: ["red", "blue", "yellow", "green"]
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching quiz from DB:', error);
+        socket.emit('error', { message: 'Failed to load quiz from database' });
+        return;
+      }
+    } else if (questions && Array.isArray(questions)) {
       // Validate custom questions
       if (questions.length === 0) {
         socket.emit('error', { message: 'At least one question is required' });
