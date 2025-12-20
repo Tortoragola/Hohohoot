@@ -12,20 +12,20 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Helper function to get current user
 async function getCurrentUser() {
-  const { data: { user }, error } = await supabaseClient.auth.getUser();
-  if (error) {
-    console.error('Error getting user:', error);
-    return null;
-  }
-  return user;
+    const { data: { user }, error } = await supabaseClient.auth.getUser();
+    if (error) {
+        console.error('Error getting user:', error);
+        return null;
+    }
+    return user;
 }
 
 // Helper function to sign out
 async function signOut() {
-  const { error } = await supabaseClient.auth.signOut();
-  if (error) {
-    console.error('Error signing out:', error);
-    return false;
-  }
-  return true;
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) {
+        console.error('Error signing out:', error);
+        return false;
+    }
+    return true;
 }

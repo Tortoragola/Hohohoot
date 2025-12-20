@@ -317,11 +317,11 @@
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 const targetTab = tab.dataset.tab;
-                
+
                 // Update active tab
                 tabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                
+
                 // Show/hide forms
                 if (targetTab === 'login') {
                     loginForm.classList.remove('hidden');
@@ -330,7 +330,7 @@
                     loginForm.classList.add('hidden');
                     signupForm.classList.remove('hidden');
                 }
-                
+
                 // Clear messages
                 hideMessages();
             });
@@ -340,22 +340,22 @@
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessages();
-            
+
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
             const loginBtn = document.getElementById('login-btn');
-            
+
             loginBtn.disabled = true;
             loginBtn.textContent = 'Logging in...';
-            
+
             try {
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
-                
+
                 if (error) throw error;
-                
+
                 if (data.user) {
                     showSuccess('Login successful! Redirecting...');
                     setTimeout(() => {
@@ -373,35 +373,35 @@
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessages();
-            
+
             const email = document.getElementById('signup-email').value.trim();
             const password = document.getElementById('signup-password').value;
             const confirmPassword = document.getElementById('signup-confirm').value;
             const signupBtn = document.getElementById('signup-btn');
-            
+
             // Validate passwords match
             if (password !== confirmPassword) {
                 showError('Passwords do not match');
                 return;
             }
-            
+
             // Validate password length
             if (password.length < 6) {
                 showError('Password must be at least 6 characters');
                 return;
             }
-            
+
             signupBtn.disabled = true;
             signupBtn.textContent = 'Creating account...';
-            
+
             try {
                 const { data, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password
                 });
-                
+
                 if (error) throw error;
-                
+
                 if (data.user) {
                     showSuccess('Account created! Redirecting...');
                     setTimeout(() => {
