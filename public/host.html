@@ -1510,7 +1510,9 @@
             questionTextEl.textContent = data.question;
             answerCountEl.textContent = `0 / ${data.totalPlayers || 0} answered`;
 
-            hostAnswerTimeLimit = data.answerTimeLimit || 20;
+            // Use the answer time limit from server data (which comes from lobby setting)
+            // If not available (shouldn't happen), fall back to hostAnswerTimeLimit
+            const currentAnswerTimeLimit = data.answerTimeLimit || hostAnswerTimeLimit || 20;
 
             // Reset show results button and state
             if (autoShowResultsInterval) {
@@ -1531,8 +1533,8 @@
                 const timerContainer = document.querySelector('.timer-container');
                 if (timerContainer) timerContainer.classList.remove('hidden');
 
-                // Start timer AFTER countdown
-                startHostTimer(hostAnswerTimeLimit);
+                // Start timer AFTER countdown with the current answer time limit
+                startHostTimer(currentAnswerTimeLimit);
 
                 // Add fade-in effect
                 questionScreen.classList.add('question-screen-fade');

@@ -463,7 +463,8 @@ io.on('connection', (socket) => {
       answers: question.answers,
       questionNumber: game.currentQuestionIndex + 1,
       totalQuestions: game.questions.length,
-      totalPlayers: Object.keys(game.players).length
+      totalPlayers: Object.keys(game.players).length,
+      answerTimeLimit: game.answerTimeLimit
     });
 
     // Send signal to players to show answer buttons
